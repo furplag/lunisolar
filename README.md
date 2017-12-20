@@ -1,5 +1,6 @@
 # lunisolar
 
+[![Coverage Status](https://coveralls.io/repos/github/furplag/lunisolar/badge.svg?branch=master)](https://coveralls.io/github/furplag/lunisolar?branch=master)
 
 help us to understand to  East Asian lunisolar calendars (especially in Japan) .
 
