@@ -9,7 +9,7 @@ Add the following snippet to any project's pom that depends on your project
 <repositories>
   ...
   <repository>
-    <id>deamtiet</id>
+    <id>lunisolar</id>
     <url>https://raw.github.com/furplag/lunisolar/mvn-repo/</url>
     <snapshots>
       <enabled>true</enabled>
