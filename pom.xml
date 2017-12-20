@@ -7,7 +7,7 @@
   <version>1.0.0-SNAPSHOT</version>
   <inceptionYear>2017</inceptionYear>
   <name>${project.artifactId}</name>
-  <description>help us to understand to  East Asian lunisolar calendars (especialy in Japan) .</description>
+  <description>help us to understand to  East Asian lunisolar calendars (especially in Japan) .</description>
   <url>https://github.com/furplag/${project.artifactId}</url>
 
   <licenses>
