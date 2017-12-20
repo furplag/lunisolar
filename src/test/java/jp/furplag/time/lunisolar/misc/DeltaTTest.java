@@ -40,8 +40,8 @@ public class DeltaTTest {
     c.setAccessible(true);
     assertThat(c.newInstance() instanceof DeltaT, is(true));
 
-    // @formatter:off
     final ZonedDateTime dateTime = Instant.parse("2001-01-01T00:00:00.000Z").atZone(ZoneOffset.UTC);
+    // @formatter:off
     IntStream.range(-5000, 0)
       .forEach(y -> {
         assertThat(
@@ -50,7 +50,6 @@ public class DeltaTTest {
         , is(net.e175.klaus.solarpositioning.DeltaT.estimate(GregorianCalendar.from(dateTime.with(ChronoField.YEAR, y))))
         );
       });
-    // @formatter:on
     IntStream.rangeClosed(1, 5000)
     .forEach(y -> {
       assertThat(
@@ -59,6 +58,7 @@ public class DeltaTTest {
       , is(net.e175.klaus.solarpositioning.DeltaT.estimate(GregorianCalendar.from(dateTime.with(ChronoField.YEAR, y))))
       );
     });
+    // @formatter:on
   }
 
 }
