@@ -107,8 +107,8 @@ public class Precession {
     return this;
   }
 
-  private double rOf(double l, double m, double n, double... f) {
-    return (f[0] + f[1]) * l + (f[2] + f[3]) * m + (f[4]) * n;
+  private double rOf(double... f) {
+    return (f[3] + f[4]) * f[0] + (f[5] + f[6]) * f[1] + (f[7]) * f[2];
   }
 
   /**
