@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package jp.furplag.time.lunisolar.misc.orrery;
 
 import java.util.Arrays;
@@ -97,14 +98,17 @@ public class Precession {
     final double l = Math.cos(alpha) * Math.cos(delta);
     final double m = Math.sin(alpha) * Math.cos(delta);
     final double n = Math.sin(delta);
-    double r2 = (((zeta.cos * z.cos * theta.cos) - (zeta.sin * z.sin)) * l) + (((-zeta.sin * z.cos * theta.cos) - (zeta.cos * z.sin)) * m) + ((-z.cos * theta.sin) * n);
-    double r3 = (((zeta.cos * z.sin * theta.cos) + (zeta.sin * z.cos)) * l) + (((-zeta.sin * z.sin * theta.cos) + (zeta.cos * z.cos)) * m) + ((-z.sin * theta.sin) * n);
-    double r4 = (zeta.cos * theta.sin * l) + (-zeta.sin * theta.sin * m) + (theta.cos * n);
-
+    double r2 = rOf(l, m, n, (zeta.cos * z.cos * theta.cos), (zeta.sin * z.sin * -1), (-zeta.sin * z.cos * theta.cos), (zeta.cos * z.sin * -1), (-z.cos * theta.sin));
+    double r3 = rOf(l, m, n, (zeta.cos * z.sin * theta.cos), (zeta.sin * z.cos), (-zeta.sin * z.sin * theta.cos), (zeta.cos * z.cos), (-z.sin * theta.sin));
+    double r4 = rOf(l, m, n, (zeta.cos * theta.sin), 0, (-zeta.sin * theta.sin), 0, theta.cos);
     longitude = (Math.atan(r3 / r2)) + (r2 < 0 ? 180.0 : r3 < 0 ? 360.0 : 0);
     latitude = Math.asin(r4) * Formula.degreezr;
 
     return this;
+  }
+
+  private double rOf(double l, double m, double n, double... f) {
+    return (f[0] + f[1]) * l + (f[2] + f[3]) * m + (f[4]) * n;
   }
 
   /**
