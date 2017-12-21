@@ -13,8 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package jp.furplag.time.lunisolar.misc;
+package jp.furplag.time.lunisolar.misc.orrery.delta;
 
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
@@ -23,7 +22,6 @@ import java.lang.reflect.Constructor;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
-import java.time.temporal.ChronoField;
 import java.util.GregorianCalendar;
 import java.util.Objects;
 import java.util.stream.IntStream;
@@ -33,7 +31,6 @@ import org.junit.Test;
 import jp.furplag.time.Julian;
 
 public class DeltaTTest {
-
   @Test
   public void test() throws ReflectiveOperationException, SecurityException {
     Constructor<DeltaT> c = DeltaT.class.getDeclaredConstructor();
@@ -42,23 +39,14 @@ public class DeltaTTest {
 
     final ZonedDateTime dateTime = Instant.parse("2001-01-01T00:00:00.000Z").atZone(ZoneOffset.UTC);
     // @formatter:off
-    IntStream.range(-5000, 0)
-      .forEach(y -> {
-        assertThat(
-          Objects.toString(y)
-        , DeltaT.compute(Julian.ofEpochMilli(dateTime.with(ChronoField.YEAR, y).toInstant().toEpochMilli()))
-        , is(net.e175.klaus.solarpositioning.DeltaT.estimate(GregorianCalendar.from(dateTime.with(ChronoField.YEAR, y))))
-        );
-      });
-    IntStream.rangeClosed(1, 5000)
+    IntStream.rangeClosed(-5000, 5000)
     .forEach(y -> {
       assertThat(
         Objects.toString(y)
-      , DeltaT.compute(Julian.ofEpochMilli(dateTime.with(ChronoField.YEAR, y).toInstant().toEpochMilli()))
-      , is(net.e175.klaus.solarpositioning.DeltaT.estimate(GregorianCalendar.from(dateTime.with(ChronoField.YEAR, y))))
+      , DeltaT.estimate(Julian.ofEpochMilli(dateTime.withYear(y).toInstant().toEpochMilli()))
+      , is(net.e175.klaus.solarpositioning.DeltaT.estimate(GregorianCalendar.from(dateTime.withYear(y))))
       );
     });
     // @formatter:on
   }
-
 }

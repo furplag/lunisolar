@@ -16,8 +16,12 @@
 
 package jp.furplag.time.lunisolar.misc;
 
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+
 import jp.furplag.time.Julian;
 import jp.furplag.time.Millis;
+import jp.furplag.time.lunisolar.misc.orrery.delta.DeltaT;
 
 /**
  * code snippets for any of calculation .
@@ -38,7 +42,7 @@ public class Astror {
   }
 
   /**
-   * calculate the delta between Universal Time (UT) and Terrestrial Time (TT) .
+   * calculates the delta between Universal Time (UT) and Terrestrial Time (TT) .
    *
    * @param julianDate the astronomical julian date
    * @return &Delta;T
@@ -47,9 +51,30 @@ public class Astror {
     return (julianDate - Julian.j2000 + (getDeltaOfT(julianDate))) / (Julian.daysOfYear * 100.0);
   }
 
+  /**
+   * calculate the delta between Universal Time (UT) and Terrestrial Time (TT) .
+   *
+   * @param julianDate the astronomical julian date
+   * @return &Delta;T
+   */
   public static double getDeltaOfT(final double julianDate) {
-    return Julian.ofEpochMilli(((long) (DeltaT.compute(julianDate) * 1000))) - Millis.epoch;
+    return Julian.ofEpochMilli(((long) (DeltaT.estimate(julianDate) * 1000))) - Millis.epoch;
   }
 
+  /**
+   * returns the decimal year represented by specified AJD .
+   *
+   * @param julianDate the astronomical julian date
+   * @return the decimal year represented by specified AJD
+   */
+  public static double yearize(final double julianDate) {
+    ZonedDateTime utc = Julian.toInstant(julianDate).atZone(ZoneOffset.UTC);
+
+    return (utc.getYear() == 0 ? -1 : utc.getYear() < 0 ? (utc.getYear() - 1) : utc.getYear()) + ((utc.getMonthValue() - .5) / 12);
+  }
+
+  /**
+   * Astror instances should NOT be constructed in standard programming .
+   */
   private Astror() {}
 }
