@@ -13,11 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package jp.furplag.time.lunisolar.misc.orrery.delta;
 
 import java.time.temporal.ValueRange;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -36,58 +39,27 @@ abstract class Minion {
   private final static Minion origin;
   static {
     // @formatter:off
-    origin = new Minion(Long.MIN_VALUE, Long.MAX_VALUE) {@Override double estimate(double decimalYear) { return -20 + 32 * Math.pow((decimalYear - 1820) / 100, 2); }};
+    origin = new Minion(Long.MIN_VALUE, Long.MAX_VALUE) {
+      @Override double estimate(double decimalYear) {
+        return -20 + 32 * Math.pow((decimalYear - 1820) / 100, 2);
+      }
+    };
+
     minions = Collections.unmodifiableSet(
       Arrays.asList(
-        new Minion(-500, 499) {@Override double estimate(double decimalYear) {
-          double u = decimalYear / 100;
-          return 10583.6 - 1014.41 * u + 33.78311 * Math.pow(u, 2) - 5.952053 * Math.pow(u, 3) - 0.1798452 * Math.pow(u, 4) + 0.022174192 * Math.pow(u, 5) + 0.0090316521 * Math.pow(u, 6);
-        }}
-      , new Minion(500, 1599) {@Override double estimate(double decimalYear) {
-          double u = (decimalYear - 1000) / 100;
-          return 1574.2 - 556.01 * u + 71.23472 * Math.pow(u, 2) + 0.319781 * Math.pow(u, 3) - 0.8503463 * Math.pow(u, 4) - 0.005050998 * Math.pow(u, 5) + 0.0083572073 * Math.pow(u, 6);
-        }}
-      , new Minion(1600, 1699) {@Override double estimate(double decimalYear) {
-          double t = decimalYear - 1600;
-          return 120 - 0.9808 * t - 0.01532 * Math.pow(t, 2) + Math.pow(t, 3) / 7129;
-        }}
-      , new Minion(1700, 1799) {@Override double estimate(double decimalYear) {
-          double t = decimalYear - 1700;
-          return 8.83 + 0.1603 * t - 0.0059285 * Math.pow(t, 2) + 0.00013336 * Math.pow(t, 3) - Math.pow(t, 4) / 1174000;
-        }}
-      , new Minion(1800, 1859) {@Override double estimate(double decimalYear) {
-          double t = decimalYear - 1800;
-          return 13.72 - 0.332447 * t + 0.0068612 * Math.pow(t, 2) + 0.0041116 * Math.pow(t, 3) - 0.00037436 * Math.pow(t, 4) + 0.0000121272 * Math.pow(t, 5) - 0.0000001699 * Math.pow(t, 6) + 0.000000000875 * Math.pow(t, 7);
-        }}
-      , new Minion(1860, 1899) {@Override double estimate(double decimalYear) {
-          double t = decimalYear - 1860;
-          return 7.62 + 0.5737 * t - 0.251754 * Math.pow(t, 2) + 0.01680668 * Math.pow(t, 3) - 0.0004473624 * Math.pow(t, 4) + Math.pow(t, 5) / 233174;
-        }}
-      , new Minion(1900, 1919) {@Override double estimate(double decimalYear) {
-          double t = decimalYear - 1900;
-          return -2.79 + 1.494119 * t - 0.0598939 * Math.pow(t, 2) + 0.0061966 * Math.pow(t, 3) - 0.000197 * Math.pow(t, 4);
-        }}
-      , new Minion(1920, 1940) {@Override double estimate(double decimalYear) {
-          double t = decimalYear - 1920;
-          return 21.20 + 0.84493 * t - 0.076100 * Math.pow(t, 2) + 0.0020936 * Math.pow(t, 3);
-        }}
-      , new Minion(1941, 1960) {@Override double estimate(double decimalYear) {
-          double t = decimalYear - 1950;
-          return 29.07 + 0.407 * t - Math.pow(t, 2) / 233 + Math.pow(t, 3) / 2547;
-        }}
-      , new Minion(1961, 1985) {@Override double estimate(double decimalYear) {
-          double t = decimalYear - 1975;
-          return 45.45 + 1.067 * t - Math.pow(t, 2) / 260 - Math.pow(t, 3) / 718;
-        }}
-      , new Minion(1986, 2004) {@Override double estimate(double decimalYear) {
-          double t = decimalYear - 2000;
-          return 63.86 + 0.3345 * t - 0.060374 * Math.pow(t, 2) + 0.0017275 * Math.pow(t, 3) + 0.000651814 * Math.pow(t, 4) + 0.00002373599 * Math.pow(t, 5);
-        }}
-      , new Minion(2005, 2049) {@Override double estimate(double decimalYear) {
-          double t = decimalYear - 2000;
-          return 62.92 + 0.32217 * t + 0.005589 * Math.pow(t, 2);
-        }}
-      , new Minion(2050, 2149) {@Override double estimate(double decimalYear) {
+          new AncientMinion(-500, 499, 0, 100, 10583.6, -1014.41, 33.78311, -5.952053, -0.1798452, 0.022174192, 0.0090316521)
+        , new AncientMinion(500, 1599, 1000, 100, 1574.2, -556.01, 71.23472, 0.319781, -0.8503463, -0.005050998, 0.0083572073)
+        , new MedievalMinion(1600, 1699, 1600, 120, -0.9808, -0.01532, 1, 1, 7129, 0, 1, 0, 1)
+        , new MedievalMinion(1700, 1799, 1700, 8.83, 0.1603, -0.0059285, 1, 0.00013336, 1, -1, 1174000, 0, 1)
+        , new StandardMinion(1800, 1859, 1800, 13.72, -0.332447, 0.0068612, 0.0041116, -0.00037436, 0.0000121272, -0.0000001699, 0.000000000875)
+        , new MedievalMinion(1860, 1899, 1860, 7.62, 0.5737, -0.251754, 1, 0.01680668, 1, -0.0004473624, 1, 1, 233174)
+        , new StandardMinion(1900, 1919, 1900, -2.79, 1.494119, -0.0598939, 0.0061966, -0.000197, 0, 0, 0)
+        , new StandardMinion(1920, 1940, 1920, 21.20, 0.84493, -0.076100, 0.0020936, 0, 0, 0, 0)
+        , new MedievalMinion(1941, 1960, 1950, 29.07, 0.407, -1, 233, 1, 2547, 0, 1, 0, 1)
+        , new MedievalMinion(1961, 1985, 1975, 45.45, 1.067, -1, 260, -1, 718, 0, 1, 0, 1)
+        , new StandardMinion(1986, 2004, 2000, 63.86, 0.3345, -0.060374, 0.0017275, 0.000651814, 0.00002373599, 0, 0, 1)
+        , new StandardMinion(2005, 2049, 2000, 62.92, 0.32217, 0.005589, 0, 0, 0, 0, 0, 1)
+        , new Minion(2050, 2149) {@Override double estimate(double decimalYear) {
           return origin.estimate(decimalYear) - 0.5628 * (2150 - decimalYear);
         }}
       ).stream().collect(Collectors.toSet())
@@ -95,10 +67,52 @@ abstract class Minion {
     // @formatter:on
   }
 
-  private final ValueRange range;
+  private static final class AncientMinion extends Minion {
+    private AncientMinion(long min, long max, double... parameters) {
+      super(min, max, parameters);
+    }
 
-  private Minion(long min, long max) {
+    @Override
+    public double estimate(double decimalYear) {
+      double u = (decimalYear - n[0]) / n[1];
+
+      return n[2] + (n[3] * u) + (n[4] * Math.pow(u, 2)) + (n[5] * Math.pow(u, 3)) + (n[6] * Math.pow(u, 4)) + (n[7] * Math.pow(u, 5)) + (n[8] * Math.pow(u, 6));
+    }
+  }
+
+  private static final class StandardMinion extends Minion {
+    private StandardMinion(long min, long max, double... parameters) {
+      super(min, max, parameters);
+    }
+
+    @Override
+    public double estimate(double decimalYear) {
+      double t = (decimalYear - n[0]);
+
+      return n[1] + (n[2] * t) + (n[3] * Math.pow(t, 2)) + (n[4] * Math.pow(t, 3)) + (n[5] * Math.pow(t, 4)) + (n[6] * Math.pow(t, 5)) + (n[7] * Math.pow(t, 6)) + (n[8] * Math.pow(t, 7));
+    }
+  }
+
+  private static final class MedievalMinion extends Minion {
+    private MedievalMinion(long min, long max, double... parameters) {
+      super(min, max, parameters);
+    }
+
+    @Override
+    public double estimate(double decimalYear) {
+      double t = decimalYear - n[0];
+
+      return n[1] + (n[2] * t) + (n[3] * Math.pow(t, 2) / n[4]) + (n[5] * Math.pow(t, 3) / n[6]) + (n[7] * Math.pow(t, 4) / n[8]) + (n[9] * Math.pow(t, 5) / n[10]);
+    }
+  }
+
+  protected final ValueRange range;
+
+  protected final double[] n;
+
+  private Minion(long min, long max, double... parameters) {
     range = ValueRange.of(min, max);
+    n = Objects.requireNonNull(Arrays.stream(Optional.ofNullable(parameters).orElse(new double[] {})).toArray());
   }
 
   /**
