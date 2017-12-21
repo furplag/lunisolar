@@ -68,6 +68,15 @@ abstract class Minion {
     // @formatter:on
   }
 
+  protected final ValueRange range;
+
+  protected final double[] n;
+
+  private Minion(long min, long max, double... parameters) {
+    range = ValueRange.of(min, max);
+    n = Objects.requireNonNull(Arrays.stream(Optional.ofNullable(parameters).orElse(new double[] {})).toArray());
+  }
+
   private static final class StandardMinion extends Minion {
     private StandardMinion(long min, long max, double... parameters) {
       super(min, max, parameters);
@@ -92,15 +101,6 @@ abstract class Minion {
 
       return n[1] + (n[2] * t) + (n[3] * Math.pow(t, 2) / n[4]) + (n[5] * Math.pow(t, 3) / n[6]) + (n[7] * Math.pow(t, 4) / n[8]) + (n[9] * Math.pow(t, 5) / n[10]);
     }
-  }
-
-  protected final ValueRange range;
-
-  protected final double[] n;
-
-  private Minion(long min, long max, double... parameters) {
-    range = ValueRange.of(min, max);
-    n = Objects.requireNonNull(Arrays.stream(Optional.ofNullable(parameters).orElse(new double[] {})).toArray());
   }
 
   /**
