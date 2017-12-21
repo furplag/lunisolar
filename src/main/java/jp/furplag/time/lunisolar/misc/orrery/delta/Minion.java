@@ -95,6 +95,12 @@ abstract class Minion {
     // @formatter:on
   }
 
+  private final ValueRange range;
+
+  private Minion(long min, long max) {
+    range = ValueRange.of(min, max);
+  }
+
   /**
    * Finding values for Delta T, the difference between Terrestrial Time (TT) and Universal Time (UT1).
    *
@@ -103,12 +109,6 @@ abstract class Minion {
    */
   static Minion of(final double decimalYear) {
     return minions.stream().filter(minion -> minion.range.isValidValue((long) (Math.floor(decimalYear)))).findFirst().orElse(origin);
-  }
-
-  protected final ValueRange range;
-
-  private Minion(long min, long max) {
-    range = ValueRange.of(min, max);
   }
 
   /**
