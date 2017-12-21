@@ -38,7 +38,7 @@ public class Astror {
    * @return normalized degree to range of 0&deg; - 360&deg;
    */
   public static double circulate(final double degree) {
-    return (degree % 360.0) + (degree < 0.0 ? 360d : 0.0);
+    return degree % 360.0 == 0 ? 0 : ((degree % 360.0) + (degree < 0.0 ? 360.0 : 0.0));
   }
 
   /**

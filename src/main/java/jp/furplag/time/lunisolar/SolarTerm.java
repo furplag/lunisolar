@@ -34,16 +34,16 @@ public abstract class SolarTerm implements Comparable<SolarTerm>, Serializable {
 
   final int termIndex;
 
-  protected SolarTerm(double julianDate) {
-    this(julianDate, EclipticLongitude.Sun.ofJulian(julianDate), null);
-  }
-
-  private SolarTerm(double julianDate, double actualLongitude, Lunisolar lunisolar) {
+  private SolarTerm(double julianDate, double actualLongitude) {
     this.julianDate = julianDate;
     this.epochMilli = Julian.toInstant(julianDate).toEpochMilli();
     this.actualLongitude = actualLongitude;
     longitude = ((int) (actualLongitude + .5d));
     this.termIndex = ((int) ((longitude + 45) / 15d)) % 24;
+  }
+
+  private SolarTerm(double julianDate) {
+    this(julianDate, EclipticLongitude.Sun.ofJulian(julianDate));
   }
 
   public static SolarTerm ofClosest(final double julianDate, final int degree, final Lunisolar lunisolar) {
@@ -54,27 +54,24 @@ public abstract class SolarTerm implements Comparable<SolarTerm>, Serializable {
     return longitude % 30 == 0 ? new MidClimate(closestTerm) : new PreClimate(closestTerm);
   }
 
+  static final class MidClimate extends SolarTerm {
+    MidClimate(double julianDate) {
+      super(julianDate);
+    }
+  }
+
+  static final class PreClimate extends SolarTerm {
+    PreClimate(double julianDate) {
+      super(julianDate);
+    }
+  }
+
   /**
    * {@inheritDoc}
    */
   @Override
   public int compareTo(SolarTerm o) {
     return Double.compare(julianDate, o.julianDate);
-  }
-
-
-  public static class PreClimate extends SolarTerm {
-
-    PreClimate(double julianDate) {
-      super(julianDate);
-    }
-  }
-
-  public static class MidClimate extends SolarTerm {
-
-    MidClimate(double julianDate) {
-      super(julianDate);
-    }
   }
 
   @Override
