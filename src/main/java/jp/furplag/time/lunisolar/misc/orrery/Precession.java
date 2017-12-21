@@ -34,10 +34,10 @@ public class Precession {
   static final List<Double> constOfZeta;
 
   /** construct parameter of &Zeta; . */
-  static final List<Double> constOfZ;
+  private static final List<Double> constOfZ;
 
   /** construct parameter of &theta; . */
-  static final List<Double> constOfTheta;
+  private static final List<Double> constOfTheta;
   static {
     constOfZeta = Arrays.asList(2306.2181, 0.30188, 0.017998);
     constOfZ = Arrays.asList(2306.2181, 1.09468, 0.018203);
@@ -56,13 +56,14 @@ public class Precession {
 
   double latitude;
 
-  static final class Minion {
+  private static final class Minion {
 
-    private final double value;
+    @SuppressWarnings("unused")
+    final double value;
 
-    private final double sin;
+    final double sin;
 
-    private final double cos;
+    final double cos;
 
     private static Minion ofT(final List<Double> constOf, final double terrestrialTime) {
       return new Minion(initialization(constOf, terrestrialTime));
@@ -70,20 +71,8 @@ public class Precession {
 
     private Minion(double value) {
       this.value = value;
-      this.sin = Math.sin(value);
-      this.cos = Math.cos(value);
-    }
-
-    @Override
-    public String toString() {
-      // @formatter:off
-      return new StringBuilder("Minion { ")
-        .append("value : ").append(value)
-        .append(", sin : ").append(sin)
-        .append(", cos : ").append(cos)
-        .append(" }")
-        .toString();
-      // @formatter:on
+      sin = Math.sin(value);
+      cos = Math.cos(value);
     }
   }
 
