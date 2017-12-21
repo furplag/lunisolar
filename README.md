@@ -1,6 +1,6 @@
 # lunisolar
 
-[![Build Status](https://travis-ci.org/furplag/deamtiet.svg?branch=master)](https://travis-ci.org/furplag/deamtiet)
+[![Build Status](https://travis-ci.org/furplag/lunisolar.svg?branch=master)](https://travis-ci.org/furplag/lunisolar)
 [![Coverage Status](https://coveralls.io/repos/github/furplag/lunisolar/badge.svg?branch=master)](https://coveralls.io/github/furplag/lunisolar?branch=master)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/3ab497704bdb440ba2e376b2012be08a)](https://www.codacy.com/app/furplag/lunisolar?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=furplag/lunisolar&amp;utm_campaign=Badge_Grade)
 [![codebeat badge](https://codebeat.co/badges/9f57e867-a8b7-432e-9795-3559081c95e4)](https://codebeat.co/projects/github-com-furplag-lunisolar-master)
