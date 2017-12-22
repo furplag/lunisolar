@@ -13,14 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package jp.furplag.time.lunisolar.misc.orrery;
 
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.Optional;
 
+/**
+ * a formula for calculates the longitude of the sun and moon .
+ *
+ * @author furplag
+ *
+ */
 class Formula implements Comparable<Formula> {
 
+  /** the type of formula . */
   static enum FormulaType {
     // @formatter:off
     Normal(0)
@@ -46,9 +54,16 @@ class Formula implements Comparable<Formula> {
     }
   }
 
+  /** radian to angle . */
   static final double radianizr;
+
+  /** angle to radian . */
   static final double degreezr;
+
+  /** coefficients of the Moon. */
   static final Formula[] sun;
+
+  /** coefficients of the Moon. */
   static final Formula[] moon;
   static {
     radianizr = Math.PI / 180.0;
@@ -148,6 +163,7 @@ class Formula implements Comparable<Formula> {
     // @formatter:on
   }
 
+  /** {@link FormulaType} */
   final FormulaType formulaType;
 
   final double amplitude;
@@ -172,13 +188,25 @@ class Formula implements Comparable<Formula> {
     return o == null ? 1 : formulaType.compareTo(o.formulaType);
   }
 
-  double compute(double terrestrialTime) {
+  /**
+   * calculations .
+   *
+   * @param terrestrialTime T (terrestrialized julian date)
+   * @return result
+   */
+  double estimate(double terrestrialTime) {
     // @formatter:off
     return
       (formulaType.is(FormulaType.Exclusive) ? (amplitude * terrestrialTime) : amplitude) * Math.cos(((angularVelocity * terrestrialTime) + initialPhase) * radianizr);
     // @formatter:on
   }
 
+  /**
+   * initialization of coefficient
+   *
+   * @param perturbations {@link #sun} or  {@link #moon}
+   * @return {@link Formula formulas}
+   */
   private static Formula[] construct(final double[]... perturbations) {
     return Arrays.stream(Optional.ofNullable(perturbations).orElse(new double[][] {{0, 1, 1, 0}})).map(Formula::new).toArray(Formula[]::new);
   }

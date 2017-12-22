@@ -31,13 +31,6 @@ public class PrecessionTest {
 
   @Test
   public void test() {
-//    assertThat(BigDecimal.valueOf(new Precession(Astror.toTerrestrialTime(Julian.j2000)).compute(0, 0).optimize(90)).setScale(9, RoundingMode.FLOOR).doubleValue(), is(89.999999999));
-//    assertThat(BigDecimal.valueOf(new Precession(Astror.toTerrestrialTime(Julian.j2000)).compute(0, 0).optimize(180)).setScale(9, RoundingMode.FLOOR).doubleValue(), is(179.999999999));
-//    assertThat(BigDecimal.valueOf(new Precession(Astror.toTerrestrialTime(Julian.j2000)).compute(0, 0).optimize(270)).setScale(9, RoundingMode.FLOOR).doubleValue(), is(269.999999999));
-//    assertThat(BigDecimal.valueOf(new Precession(Astror.toTerrestrialTime(0)).compute(0, 0).optimize(90)).setScale(9, RoundingMode.FLOOR).doubleValue(), is(268.477584122));
-//    assertThat(BigDecimal.valueOf(new Precession(Astror.toTerrestrialTime(0)).compute(0, 0).optimize(180)).setScale(9, RoundingMode.FLOOR).doubleValue(), is(358.477584122));
-//    assertThat(BigDecimal.valueOf(new Precession(Astror.toTerrestrialTime(0)).compute(0, 0).optimize(270)).setScale(9, RoundingMode.FLOOR).doubleValue(), is(88.477584122));
-
     ZonedDateTime zdt = ZonedDateTime.parse("2001-01-01T00:00Z");
     IntStream.rangeClosed(-1000, 1000)
       .forEach(y -> {

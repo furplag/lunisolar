@@ -55,9 +55,9 @@ public class LunisolarCalendar {
     final Lunisolar lunisolar = new Lunisolar(0, 0, 365.242234, 29.530588, ZoneOffset.ofHours(9)) {};
     // @formatter:off
 
-    LongStream.rangeClosed(1844, 2300)
+    LongStream.rangeClosed(1956, 1956)
       .mapToObj(y->new LunisolarCalendar(lunisolar, Julian.ofEpochMilli(t.with(ChronoField.YEAR, y).toInstant().toEpochMilli())))
-      .filter(c->c.monthsOfYear.get(0).monthOfYear != 1 || c.monthsOfYear.get(c.monthsOfYear.size() - 1).monthOfYear != 12)
+//      .filter(c->c.monthsOfYear.get(0).monthOfYear != 1 || c.monthsOfYear.get(c.monthsOfYear.size() - 1).monthOfYear != 12)
       .forEach(System.out::println)
       ;
 
