@@ -56,6 +56,12 @@ public class Precession {
 
   double latitude;
 
+  /**
+   * a formula .
+   *
+   * @author furplag
+   *
+   */
   private static final class Minion {
 
     @SuppressWarnings("unused")
@@ -83,21 +89,37 @@ public class Precession {
     theta = Minion.ofT(constOfTheta, terrestrialTime);
   }
 
+  /**
+   * initialize using location .
+   *
+   * @param alpha longitude
+   * @param delta latitude
+   * @return result
+   */
   Precession compute(double alpha, double delta) {
-    final double l = Math.cos(alpha) * Math.cos(delta);
-    final double m = Math.sin(alpha) * Math.cos(delta);
-    final double n = Math.sin(delta);
-    double r2 = rOf(l, m, n, (zeta.cos * z.cos * theta.cos), (zeta.sin * z.sin * -1), (-zeta.sin * z.cos * theta.cos), (zeta.cos * z.sin * -1), (-z.cos * theta.sin));
-    double r3 = rOf(l, m, n, (zeta.cos * z.sin * theta.cos), (zeta.sin * z.cos), (-zeta.sin * z.sin * theta.cos), (zeta.cos * z.cos), (-z.sin * theta.sin));
-    double r4 = rOf(l, m, n, (zeta.cos * theta.sin), 0, (-zeta.sin * theta.sin), 0, theta.cos);
+    double r2 = rOf(alpha, delta, (zeta.cos * z.cos * theta.cos), (zeta.sin * z.sin * -1), (-zeta.sin * z.cos * theta.cos), (zeta.cos * z.sin * -1), (-z.cos * theta.sin));
+    double r3 = rOf(alpha, delta, (zeta.cos * z.sin * theta.cos), (zeta.sin * z.cos), (-zeta.sin * z.sin * theta.cos), (zeta.cos * z.cos), (-z.sin * theta.sin));
+    double r4 = rOf(alpha, delta, (zeta.cos * theta.sin), 0, (-zeta.sin * theta.sin), 0, theta.cos);
     longitude = (Math.atan(r3 / r2)) + (r2 < 0 ? 180.0 : r3 < 0 ? 360.0 : 0);
     latitude = Math.asin(r4) * Formula.degreezr;
 
     return this;
   }
 
-  private double rOf(double... f) {
-    return (f[3] + f[4]) * f[0] + (f[5] + f[6]) * f[1] + (f[7]) * f[2];
+  /**
+   * calculations .
+   *
+   * @param alpha longitude
+   * @param delta latitude
+   * @param f
+   * @return result
+   */
+  private double rOf(double alpha, double delta, double... f) {
+    final double l = Math.cos(alpha) * Math.cos(delta);
+    final double m = Math.sin(alpha) * Math.cos(delta);
+    final double n = Math.sin(delta);
+
+    return (f[0] + f[1]) * l + (f[2] + f[3]) * m + (f[4]) * n;
   }
 
   /**
