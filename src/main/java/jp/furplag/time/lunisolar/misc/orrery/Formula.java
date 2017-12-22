@@ -172,15 +172,11 @@ class Formula implements Comparable<Formula> {
 
   final double initialPhase;
 
-  private Formula(double[] perturbations) {
-    this(FormulaType.valueOf((int) perturbations[0]), perturbations[1], perturbations[2], perturbations[3]);
-  }
-
-  private Formula(FormulaType formulaType, double amplitude, double angularVelocity, double initialPhase) {
-    this.formulaType = Objects.requireNonNull(formulaType);
-    this.amplitude = amplitude;
-    this.angularVelocity = angularVelocity;
-    this.initialPhase = initialPhase;
+  private Formula(double... perturbations) {
+    this.formulaType = Objects.requireNonNull(FormulaType.valueOf((int) perturbations[0]));
+    this.amplitude = perturbations[1];
+    this.angularVelocity = perturbations[2];
+    this.initialPhase = perturbations[3];
   }
 
   @Override
