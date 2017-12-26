@@ -21,9 +21,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.ValueRange;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import jp.furplag.time.Millis;
@@ -46,10 +44,10 @@ public final class LunarMonth implements Comparable<LunarMonth>, Serializable {
 
   int monthOfYear;
 
-  LunarMonth(long fromEpochMilli, long toEpochMilli, List<SolarTerm> climates) {
+  LunarMonth(long fromEpochMilli, long toEpochMilli, List<SolarTerm> solarTerms) {
     range = ValueRange.of(fromEpochMilli, toEpochMilli);
-    preClimates = Optional.ofNullable(climates).orElse(new ArrayList<>()).stream().filter(t->t instanceof PreClimate).filter(t->range.isValidValue(Millis.ofJulian(t.julianDate))).collect(Collectors.toList());
-    midClimates = Optional.ofNullable(climates).orElse(new ArrayList<>()).stream().filter(t->t instanceof MidClimate).filter(t->range.isValidValue(Millis.ofJulian(t.julianDate))).collect(Collectors.toList());
+    preClimates = PreClimate.stream(solarTerms).filter(t->range.isValidValue(Millis.ofJulian(t.julianDate))).collect(Collectors.toList());
+    midClimates = MidClimate.stream(solarTerms).filter(t->range.isValidValue(Millis.ofJulian(t.julianDate))).collect(Collectors.toList());
     november = midClimates.stream().anyMatch(t -> t.longitude == 270);
     intercalary = midClimates != null && midClimates.isEmpty();
   }
