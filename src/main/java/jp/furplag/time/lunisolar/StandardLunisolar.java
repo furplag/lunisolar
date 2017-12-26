@@ -80,12 +80,10 @@ public final class StandardLunisolar extends Lunisolar {
   @Override
   List<SolarTerm> termsOfBase(double julianDate) {
     List<SolarTerm> terms = new ArrayList<>();
-    final double winterSolsticeOfLastYear = closestTerm(firstDayOfYear(julianDate), 270d);
-
     int deg = 360;
-    terms.add(SolarTerm.ofClosest(plusMonth(winterSolsticeOfLastYear, 14), deg, this));
+    final double winterSolsticeOfLastYear = closestTerm(firstDayOfYear(julianDate), 270d);
     do {
-      terms.add(SolarTerm.ofClosest(terms.get(terms.size() - 1).julianDate, deg - (15 * (terms.size())), this));
+      terms.add(SolarTerm.ofClosest(terms.isEmpty() ? plusMonth(winterSolsticeOfLastYear, 14) : terms.get(terms.size() - 1).julianDate, deg - (15 * (terms.size())), this));
     } while (terms.get(terms.size() - 1).julianDate > winterSolsticeOfLastYear);
 
     return terms.stream().sorted().collect(Collectors.toList());
