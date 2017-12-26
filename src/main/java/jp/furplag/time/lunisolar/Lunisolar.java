@@ -158,13 +158,12 @@ public abstract class Lunisolar {
    * @return the first day of lunar month
    */
   protected double latestNewMoon(double julianDate) {
-    final Map<Double, Double> results = new HashMap<>();
-
     double numeric = (long) (julianDate);
     double floating = julianDate - numeric;
     double delta = 0.0;
     double diffOfNumeric = 0.0;
     double diffOfFloating = 0.0;
+    final Map<Double, Double> results = new HashMap<>();
     int counter = 0;
     do {
       delta = EclipticLongitude.Moon.ofJulian((numeric + floating)) - EclipticLongitude.Sun.ofJulian(numeric + floating);
@@ -174,7 +173,6 @@ public abstract class Lunisolar {
         delta -= 360.0;
       }
       counter++;
-
       diffOfFloating = delta * (daysOfMonth / 360.0);
       diffOfNumeric = (long) diffOfFloating;
       diffOfFloating -= diffOfNumeric;

@@ -59,22 +59,12 @@ public class LunisolarCalendar {
 
   private static List<LunarMonth> leapmonthsOfYear(final List<LunarMonth> monthsOfYear) {
     final LunarMonth november = Objects.requireNonNull(monthsOfYear).stream().filter(monthOfYear -> monthOfYear.november).findFirst().orElse(null);
-    final boolean[] intercalyed = {false};
+    final boolean[] intercalaryzed = {false};
     // @formatter:off
     monthsOfYear.stream().filter(monthOfYear -> november.range.getMinimum() < monthOfYear.range.getMinimum())
-    .forEach(e -> {
-      if (e.intercalary && !intercalyed[0]) {
-        e.intercalaryInCalendar = true;
-        intercalyed[0] = true;
-      }
-    });
+    .forEach(e -> e.intercalaryze(intercalaryzed[0]));
     monthsOfYear.stream().filter(monthOfYear -> november.range.getMinimum() > monthOfYear.range.getMinimum())
-    .forEach(e -> {
-      if (e.intercalary && !intercalyed[0]) {
-        e.intercalaryInCalendar = true;
-        intercalyed[0] = true;
-      }
-    });
+    .forEach(e -> e.intercalaryze(intercalaryzed[0]));
     final int[] theMonth = {0};
     monthsOfYear.forEach(e -> {
       if (!e.intercalaryInCalendar) theMonth[0]++;
@@ -84,6 +74,7 @@ public class LunisolarCalendar {
 
     return Collections.unmodifiableList(monthsOfYear);
   }
+
 
   @Override
   public String toString() {
