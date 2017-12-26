@@ -40,7 +40,7 @@ public abstract class SolarTerm implements Comparable<SolarTerm>, Serializable {
     }
 
     static Stream<SolarTerm> stream(final List<SolarTerm> solarTerms) {
-      return stream(solarTerms).filter(solarTerm -> solarTerm instanceof MidClimate);
+      return SolarTerm.stream(solarTerms).filter(solarTerm -> solarTerm instanceof MidClimate);
     }
   }
 
@@ -50,7 +50,7 @@ public abstract class SolarTerm implements Comparable<SolarTerm>, Serializable {
     }
 
     static Stream<SolarTerm> stream(final List<SolarTerm> solarTerms) {
-      return stream(solarTerms).filter(solarTerm -> solarTerm instanceof PreClimate);
+      return SolarTerm.stream(solarTerms).filter(solarTerm -> solarTerm instanceof PreClimate);
     }
   }
 
