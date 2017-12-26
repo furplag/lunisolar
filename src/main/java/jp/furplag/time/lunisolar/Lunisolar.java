@@ -16,160 +16,140 @@
 package jp.furplag.time.lunisolar;
 
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.time.temporal.ChronoField;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.ValueRange;
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import jp.furplag.time.Julian;
-import jp.furplag.time.Millis;
 import jp.furplag.time.lunisolar.misc.Astror;
 import jp.furplag.time.lunisolar.misc.orrery.EclipticLongitude;
 
+/**
+ * lunisolar calendar system .
+ *
+ * <h1>Overview</h1>
+ * <ol>
+ * <li>compute the winter solstice of last year.</li>
+ * <li>compute the solar terms in the year.</li>
+ * <li>compute moments of new moon in the year.</li>
+ * <li>construct the months of the year using the moments of new moon.</li>
+ * <li>indexing the months using moments of the solar terms.</li>
+ * <li>detecting the leap month.</li>
+ * </ol>
+ *
+ * @author furplag
+ *
+ */
 public abstract class Lunisolar {
 
   static final double precision = 5E-10;
 
-  static final double loopLimit = 100;
+  static final int loopLimit = 100;
 
-  protected final double daysOfYear;
+  final double daysOfYear;
 
-  protected final double daysOfMonth;
+  final double daysOfMonth;
 
-  protected final ZoneOffset zoneOffset;
+  final ZoneOffset zoneOffset;
 
-  protected Lunisolar(long rangeFrom, long rangeTo, double daysOfYear, double daysOfMonth, ZoneOffset zoneOffset) {
+  Lunisolar(double daysOfYear, double daysOfMonth, ZoneOffset zoneOffset) {
     this.daysOfYear = daysOfYear;
     this.daysOfMonth = daysOfMonth;
     this.zoneOffset = zoneOffset;
   }
 
-
-  protected long asStartOfDay(double julianDate) {
-    return Julian.toInstant(julianDate).atOffset(zoneOffset).truncatedTo(ChronoUnit.DAYS).toInstant().toEpochMilli();
-  }
-
-  protected List<Long> firstDaysOfYear(List<Double> solarTerms) {
+  /**
+   * returns the result that have minimum delta.
+   *
+   * @param results {@link Map} of delta: julianDate
+   * @param _default a fallback
+   * @return the result
+   */
+  static double doOurOwnBest(final Map<Double, Double> results, final double _default) {
     // @formatter:off
-    return Optional.ofNullable(solarTerms).orElse(new ArrayList<>()).stream()
-      .filter(Objects::nonNull)
-      .map(this::getLatestNewMoon)
-      .mapToLong(this::asStartOfDay)
-      .distinct()
-      .mapToObj(Long::valueOf)
-      .sorted()
-      .collect(Collectors.toList());
+    return Objects.requireNonNull(results.entrySet()).stream()
+      .sorted(new Comparator<Map.Entry<Double, Double>>() {
+        @Override public int compare(Entry<Double, Double> o1, Entry<Double, Double> o2) {
+          return o1.getKey().compareTo(o2.getKey());
+        }
+      }).mapToDouble(Map.Entry::getValue).min().orElse(_default);
     // @formatter:on
   }
 
   /**
-   * calculate the closest instant in which the ecliptic longitude of the sun
-   * places at the specified angle from the specified julian date.
+   * similar to {@link LocalDate#atStartOfDay(java.time.ZoneId)} .
    *
    * @param julianDate an instant represented by astronomical julian date
-   * @param degree the degree which circlyzed 0 to 360
-   * @return the closest instant in which the ecliptic longitude of the sun
-   *          places at the specified angle
+   * @return the time at 00:00:00 in specified day
    */
-  protected double getClosestTerm(final double julianDate, final double degree) {
-    final double expect = Astror.circulate(degree);
-    double numeric = (long) julianDate;
-    double floating = julianDate - numeric;
-    double delta = 0.0;
-    double diff = 0.0;
-    int counter = 0;
-    do {
-      delta = EclipticLongitude.Sun.ofJulian(numeric + floating) - expect;
-      if (delta > 180.0) {
-        delta -= 360.0;
-      } else if (delta < -180.0) {
-        delta += 360.0;
-      }
-      counter++;
-
-      diff = delta * daysOfYear / 360.0;
-      numeric -= (long) diff;
-      floating -= diff - ((long) diff);
-      if (floating < 0) {
-        floating++;
-        numeric--;
-      } else if (floating > 1) {
-        floating--;
-        numeric++;
-      }
-    } while (Math.abs(diff) > precision && counter < loopLimit);
-    if (counter >= (loopLimit / 2)) System.out.println("## (" + counter + ") fallen. : " + Julian.toInstant(julianDate) + "(" + julianDate + ")" + "[" + (numeric + floating) + "]");
-
-    return numeric + floating;
+  protected long asStartOfDay(double julianDate) {
+    return Julian.toInstant(julianDate).atOffset(zoneOffset).truncatedTo(ChronoUnit.DAYS).toInstant().toEpochMilli();
   }
 
-  OffsetDateTime atOffset(Instant instant) {
+  /**
+   * substitute for {@link Instant#atOffset(ZoneOffset)} .
+   *
+   * @param instant {@link Instant}
+   * @return an {@link OffsetDateTime}
+   */
+  protected OffsetDateTime atOffset(Instant instant) {
     return instant.atOffset(zoneOffset);
   }
 
   /**
-   * calculate the first day of the year which contains specified instant .
+   * calculate the closest instant in which the ecliptic longitude of the sun places at the specified angle from the specified julian date.
    *
    * @param julianDate an instant represented by astronomical julian date
-   * @return an instant of 1st Jan. of the year which contains specified instant
+   * @param degree the degree which circlyzed 0 to 360
+   * @return the closest instant in which the ecliptic longitude of the sun places at the specified angle
    */
-  protected final double getFirstDayOfYear(double julianDate) {
-    double springEquinox = getClosestTerm(Julian.ofEpochMilli(atOffset(Julian.toInstant(julianDate)).with(ChronoField.MONTH_OF_YEAR, 4).toInstant().toEpochMilli()), 0);
-    double midClimateOfFirst = getClosestTerm(springEquinox, 330);
-    double preClimateOfFirst = getClosestTerm(midClimateOfFirst, 315);
-    double temporalFirst = getLatestNewMoon(midClimateOfFirst);
-    double temporalPrevious = getLatestNewMoon(plusMonth(temporalFirst, -.1));
-    double temporalNext = getLatestNewMoon(plusMonth(temporalFirst, 1.1));
+  abstract double closestTerm(double julianDate, double degree);
+
+  /**
+   *
+   *
+   * @param julianDate an instant represented by astronomical julian date
+   * @return
+   */
+  protected double firstDayOfYear(double julianDate) {
+    double springEquinox = closestTerm(Julian.ofEpochMilli(atOffset(Julian.toInstant(julianDate)).with(ChronoField.MONTH_OF_YEAR, 4).toInstant().toEpochMilli()), 0);
+    double midClimateOfFirst = closestTerm(springEquinox, 330);
+    double temporalFirst = latestNewMoon(midClimateOfFirst);
+    double temporalNext = latestNewMoon(plusMonth(temporalFirst, 1.1));
     long dayOfMidClimateOfFirst = asStartOfDay(midClimateOfFirst);
     long dayOfTemporalFirst = asStartOfDay(temporalFirst);
     long dayOfTemporalNext = asStartOfDay(temporalNext);
 
-    Map<String, Double> map = new HashMap<>();
-    map.put("?12?", temporalPrevious);
-    map.put("? 1?", temporalFirst);
-    map.put("? 2?", temporalNext);
-    map.put("?雨?", midClimateOfFirst);
-    map.put("?春?", preClimateOfFirst);
-    map.entrySet().stream().sorted(new Comparator<Map.Entry<String, Double>>() {
-      @Override
-      public int compare(Entry<String, Double> o1, Entry<String, Double> o2) {
-        // TODO 自動生成されたメソッド・スタブ
-        return o1.getValue().compareTo(o2.getValue());
-      }})
-    .forEach(e->{
-//      System.out.print(e.getKey());
-//      System.out.print("=");
-//      System.out.print( Instant.ofEpochMilli(asStartOfDay(e.getValue())).atOffset(zoneOffset) );
-//      System.out.println();
-    });
-
-    if (dayOfTemporalFirst < dayOfMidClimateOfFirst) {
-      if (dayOfMidClimateOfFirst < dayOfTemporalNext) {
-        return temporalFirst;
-      } else {
-        return temporalNext;
-      }
-    } else if (dayOfTemporalFirst > dayOfMidClimateOfFirst) {
-      return temporalPrevious;
-    } else if (temporalFirst < midClimateOfFirst) {
-      return temporalFirst;
-    }
-    return
-//      dayOfTemporalFirst < dayOfMidClimateOfFirst ? temporalFirst :
-//      dayOfTemporalFirst > dayOfMidClimateOfFirst ? getLatestNewMoon(plusMonth(temporalFirst, -.1)) :
-      temporalNext;
+    return dayOfTemporalFirst < dayOfMidClimateOfFirst ? (dayOfMidClimateOfFirst < dayOfTemporalNext ? temporalFirst : temporalNext) : dayOfTemporalFirst > dayOfMidClimateOfFirst ? latestNewMoon(plusMonth(temporalFirst, -.1)) : temporalFirst < midClimateOfFirst ? temporalFirst : temporalNext;
   }
+
+  /**
+   *
+   *
+   * @param solarTerms {@link SolarTerm} of the year
+   * @param rangeOfYear the days of year
+   * @return
+   */
+  abstract List<Long> firstDaysOfYear(List<SolarTerm> solarTerms, ValueRange rangeOfYear);
+
+  /**
+   * returns the list of {@link SolarTerm} between a winter solstice of the year that contains specified instant and last year's one .
+   *
+   * @param julianDate an instant represented by astronomical julian date
+   * @return list of {@link SolarTerm} between the winter solstice of
+   */
+  abstract List<SolarTerm> termsOfBase(double julianDate);
 
   /**
    * calculate the first day of lunar month (typically the day contains an instant of new moon) .
@@ -177,22 +157,21 @@ public abstract class Lunisolar {
    * @param julianDate an instant represented by astronomical julian date
    * @return the first day of lunar month
    */
-  protected double getLatestNewMoon(double julianDate) {
+  protected double latestNewMoon(double julianDate) {
+    final Map<Double, Double> results = new HashMap<>();
+
     double numeric = (long) (julianDate);
     double floating = julianDate - numeric;
-    double delta = .0;
-    double diffOfNumeric = .0;
-    double diffOfFloating = .0;
+    double delta = 0.0;
+    double diffOfNumeric = 0.0;
+    double diffOfFloating = 0.0;
     int counter = 0;
-
     do {
       delta = EclipticLongitude.Moon.ofJulian((numeric + floating)) - EclipticLongitude.Sun.ofJulian(numeric + floating);
-      if (counter == 0) {
+      if (counter == 0 || delta < -15.0) {
         delta = Astror.circulate(delta);
       } else if (delta > 345.0) {
         delta -= 360.0;
-      } else if (delta < -15.0) {
-        delta = Astror.circulate(delta);
       }
       counter++;
 
@@ -201,10 +180,31 @@ public abstract class Lunisolar {
       diffOfFloating -= diffOfNumeric;
       numeric -= diffOfNumeric;
       floating -= diffOfFloating;
-    } while (Math.abs(diffOfNumeric + diffOfFloating) > precision && counter < loopLimit);
-    if (counter >= (loopLimit / 2)) System.out.println("# (" + counter + ") fallen. : " + Julian.toInstant(julianDate) + "(" + julianDate + ")" + "[" + (numeric + floating) + "]");
 
-    return numeric + floating;
+      results.put(Math.abs(diffOfNumeric + diffOfFloating), (numeric + floating));
+    } while (Math.abs(diffOfNumeric + diffOfFloating) > precision && counter < loopLimit);
+
+    return counter < loopLimit ? (numeric + floating) : (doOurOwnBest(results, (numeric + floating)));
+  }
+
+  /**
+   * optimize the lunar months to fit the year .
+   *
+   * @param solarTerms {@link SolarTerm} of the year
+   * @param firstDaysOfYear first days of the year
+   * @param rangeOfYear the days of year
+   * @return lunar calendar in the year
+   */
+  protected List<LunarMonth> monthsOfYear(List<SolarTerm> solarTerms, List<Long> firstDaysOfYear, ValueRange rangeOfYear) {
+    // @formatter:off
+    return
+      Objects.isNull(firstDaysOfYear) ? null :
+      firstDaysOfYear.isEmpty() ? null :
+      IntStream.range(1, firstDaysOfYear.size())
+        .mapToObj(index -> new LunarMonth(firstDaysOfYear.get(index - 1), firstDaysOfYear.get(index) - 1, solarTerms))
+        .filter(month -> rangeOfYear.isValidValue(month.range.getMinimum()))
+        .collect(Collectors.toList());
+    // @formatter:on
   }
 
   /**
@@ -214,21 +214,21 @@ public abstract class Lunisolar {
    * @param amount number of months which add
    * @return an instant with the specified amount added
    */
-  protected double plusMonth(final double julianDate, final double amount) {
+  protected double plusMonth(double julianDate, double amount) {
     return julianDate + (synodicMonth(julianDate) * amount);
   }
 
-  protected List<SolarTerm> solarTermsBase(double julianDate) {
-    List<SolarTerm> terms = new ArrayList<>();
+  /**
+   * returns the {@link ValueRange} represented by the days of year that contains specified instant.
+   *
+   * @param julianDate an instant represented by astronomical julian date
+   * @return {@link ValueRange}
+   */
+  protected ValueRange rangeOfYear(double julianDate) {
+    final double firstDayOfYear = firstDayOfYear(julianDate);
+    double firstDayOfNextYear = firstDayOfYear(plusMonth(firstDayOfYear, 16));
 
-    int deg = 360;
-    double winterSolsticeOfLastYear = getClosestTerm(getFirstDayOfYear(julianDate), 270d);
-    terms.add(SolarTerm.ofClosest(plusMonth(winterSolsticeOfLastYear, 14), deg, this));
-    do {
-      terms.add(SolarTerm.ofClosest(terms.get(terms.size() - 1).julianDate, deg - (15 * (terms.size())), this));
-    } while (terms.get(terms.size() - 1).julianDate > winterSolsticeOfLastYear);
-
-    return terms.stream().sorted().collect(Collectors.toList());
+    return ValueRange.of(asStartOfDay(firstDayOfYear), asStartOfDay(firstDayOfNextYear) - 1L);
   }
 
   /**
@@ -239,40 +239,5 @@ public abstract class Lunisolar {
    */
   protected double synodicMonth(double julianDate) {
     return ((julianDate - Julian.j2000) * Julian.incrementOfSynodicMonth) + daysOfMonth;
-  }
-
-  ValueRange rangeOfYear(double julianDate) {
-    final double firstDayOfYear = getFirstDayOfYear(julianDate);
-    double firstDayOfNextYear = getFirstDayOfYear(plusMonth(firstDayOfYear, 16));
-    if (asStartOfDay(firstDayOfYear) >= asStartOfDay(firstDayOfNextYear)) {
-      System.out.println(atOffset(Millis.toInstant(asStartOfDay(firstDayOfYear))));
-      System.out.println(atOffset(Millis.toInstant(asStartOfDay(firstDayOfNextYear))));
-    }
-    return ValueRange.of(asStartOfDay(firstDayOfYear), asStartOfDay(firstDayOfNextYear) - 1L);
-  }
-
-  List<Long> firstDaysOfYear(List<SolarTerm> solarTerms, ValueRange rangeOfYear) {
-    // @formatter:off
-    return Optional.ofNullable(solarTerms).orElse(new ArrayList<>())
-      .stream()
-      .map(solarTerm -> solarTerm.julianDate)
-      .map(this::getLatestNewMoon)
-      .mapToLong(this::asStartOfDay)
-      .distinct()
-      .mapToObj(Long::valueOf)
-      .collect(Collectors.toList());
-    // @formatter:on
-  }
-
-  List<LunarMonth> monthsOfYear(List<SolarTerm> solarTerms, List<Long> firstDaysOfYear, ValueRange rangeOfYear) {
-    // @formatter:off
-    return
-      Objects.isNull(firstDaysOfYear) ? null :
-      firstDaysOfYear.isEmpty() ? null :
-      IntStream.range(1, firstDaysOfYear.size())
-        .mapToObj(index -> new LunarMonth(firstDaysOfYear.get(index - 1), firstDaysOfYear.get(index) - 1, solarTerms))
-        .filter(month -> rangeOfYear.isValidValue(month.range.getMinimum()))
-        .collect(Collectors.toList());
-    // @formatter:on
   }
 }

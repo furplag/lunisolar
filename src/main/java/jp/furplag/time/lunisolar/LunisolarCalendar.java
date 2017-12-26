@@ -16,10 +16,6 @@
 package jp.furplag.time.lunisolar;
 
 import java.time.Duration;
-import java.time.Instant;
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
-import java.time.temporal.ChronoField;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.ValueRange;
 import java.util.ArrayList;
@@ -28,40 +24,23 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import java.util.stream.LongStream;
 
-import jp.furplag.time.Julian;
 import jp.furplag.time.Millis;
 
 public class LunisolarCalendar {
 
-  private final Lunisolar lunisolar;
+  final Lunisolar lunisolar;
 
-  private final ValueRange rangeOfYear;
+  final ValueRange rangeOfYear;
 
-  private final List<LunarMonth> monthsOfYear;
+  final List<LunarMonth> monthsOfYear;
 
   public LunisolarCalendar(Lunisolar lunisolar, double julianDate) {
-//    System.out.println(lunisolar.atOffset(Julian.toInstant(julianDate)));
     this.lunisolar = Objects.requireNonNull(lunisolar);
     this.rangeOfYear = lunisolar.rangeOfYear(julianDate);
-    final List<SolarTerm> solarTerms = lunisolar.solarTermsBase(julianDate);
+    final List<SolarTerm> solarTerms = lunisolar.termsOfBase(julianDate);
     List<LunarMonth> monthsOfYear = lunisolar.monthsOfYear(solarTerms, lunisolar.firstDaysOfYear(solarTerms, rangeOfYear), rangeOfYear);
     this.monthsOfYear = monthsOfYear.size() > 12 ? leapmonthsOfYear(monthsOfYear) : monthsOfYear(monthsOfYear);
-  }
-
-  public static void main(String[] args) {
-    final OffsetDateTime t = Instant.parse("1844-12-01T12:00:00.000Z").atOffset(ZoneOffset.ofHours(9));
-    final Lunisolar lunisolar = new Lunisolar(0, 0, 365.242234, 29.530588, ZoneOffset.ofHours(9)) {};
-    // @formatter:off
-
-    LongStream.rangeClosed(1956, 1956)
-      .mapToObj(y->new LunisolarCalendar(lunisolar, Julian.ofEpochMilli(t.with(ChronoField.YEAR, y).toInstant().toEpochMilli())))
-//      .filter(c->c.monthsOfYear.get(0).monthOfYear != 1 || c.monthsOfYear.get(c.monthsOfYear.size() - 1).monthOfYear != 12)
-      .forEach(System.out::println)
-      ;
-
-    // @formatter:on
   }
 
   private static List<LunarMonth> monthsOfYear(final List<LunarMonth> monthsOfYear) {
