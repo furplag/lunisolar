@@ -44,11 +44,7 @@ public final class StandardLunisolar extends Lunisolar {
     Map<Double, Double> results = new HashMap<>();
     do {
       delta = EclipticLongitude.Sun.ofJulian(numeric + floating) - expect;
-      if (delta > 180.0) {
-        delta -= 360.0;
-      } else if (delta < -180.0) {
-        delta += 360.0;
-      }
+      delta += delta > 180.0 ? -360.0 : delta < -180.0 ? 360.0 : 0;
       counter++;
 
       diff = delta * daysOfYear / 360.0;
