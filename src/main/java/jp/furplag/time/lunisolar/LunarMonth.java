@@ -49,7 +49,7 @@ public final class LunarMonth implements Comparable<LunarMonth>, Serializable {
     preClimates = PreClimate.stream(solarTerms).filter(t->range.isValidValue(Millis.ofJulian(t.julianDate))).collect(Collectors.toList());
     midClimates = MidClimate.stream(solarTerms).filter(t->range.isValidValue(Millis.ofJulian(t.julianDate))).collect(Collectors.toList());
     november = midClimates.stream().anyMatch(t -> t.longitude == 270);
-    intercalary = midClimates != null && midClimates.isEmpty();
+    intercalary = midClimates.isEmpty();
   }
 
   @Override
@@ -60,10 +60,9 @@ public final class LunarMonth implements Comparable<LunarMonth>, Serializable {
   boolean intercalaryze(boolean intercalaryed) {
     if (intercalary && !intercalaryed) {
       intercalaryInCalendar = true;
-      intercalaryed = true;
     }
 
-    return intercalaryed;
+    return intercalary && !intercalaryed;
   }
 
   @Override

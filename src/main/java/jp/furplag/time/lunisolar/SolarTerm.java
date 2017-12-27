@@ -34,6 +34,33 @@ import jp.furplag.time.lunisolar.misc.orrery.EclipticLongitude;
  */
 public abstract class SolarTerm implements Comparable<SolarTerm>, Serializable {
 
+  /** milliseconds from 1970-01-01T00:00:00.000Z . */
+  final long epochMilli;
+
+  /** AJD . */
+  final double julianDate;
+
+  /** longitude of sun . */
+  final double actualLongitude;
+
+  /** 360&deg; / 15&deg; . */
+  final int longitude;
+
+  /** 360&deg; / 24 . */
+  final int termIndex;
+
+  private SolarTerm(double julianDate) {
+    this(julianDate, EclipticLongitude.Sun.ofJulian(julianDate));
+  }
+
+  private SolarTerm(double julianDate, double actualLongitude) {
+    this.julianDate = julianDate;
+    this.epochMilli = Julian.toInstant(julianDate).toEpochMilli();
+    this.actualLongitude = actualLongitude;
+    longitude = ((int) (actualLongitude + .5));
+    this.termIndex = ((int) ((longitude + 45.0) / 15.0)) % 24;
+  }
+
   static final class MidClimate extends SolarTerm {
     MidClimate(double julianDate) {
       super(julianDate);
@@ -74,33 +101,6 @@ public abstract class SolarTerm implements Comparable<SolarTerm>, Serializable {
     double closestTerm = lunisolar.closestTerm(julianDate, longitude);
 
     return longitude % 30 == 0 ? new MidClimate(closestTerm) : new PreClimate(closestTerm);
-  }
-
-  /** milliseconds from 1970-01-01T00:00:00.000Z . */
-  final long epochMilli;
-
-  /** AJD . */
-  final double julianDate;
-
-  /** longitude of sun . */
-  final double actualLongitude;
-
-  /** 360&deg; / 15&deg; . */
-  final int longitude;
-
-  /** 360&deg; / 24 . */
-  final int termIndex;
-
-  private SolarTerm(double julianDate) {
-    this(julianDate, EclipticLongitude.Sun.ofJulian(julianDate));
-  }
-
-  private SolarTerm(double julianDate, double actualLongitude) {
-    this.julianDate = julianDate;
-    this.epochMilli = Julian.toInstant(julianDate).toEpochMilli();
-    this.actualLongitude = actualLongitude;
-    longitude = ((int) (actualLongitude + .5));
-    this.termIndex = ((int) ((longitude + 45.0) / 15.0)) % 24;
   }
 
   /**

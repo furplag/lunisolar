@@ -34,6 +34,7 @@ import org.junit.Test;
 
 import jp.furplag.time.Julian;
 import jp.furplag.time.lunisolar.misc.Astror;
+import jp.furplag.time.lunisolar.misc.orrery.Formula.FormulaType;
 
 public class EclipticLongitudeTest {
 
@@ -42,6 +43,12 @@ public class EclipticLongitudeTest {
     assertThat(Formula.sun[0].compareTo(null), is(1));
     assertThat(Formula.sun[0].compareTo(Arrays.stream(Formula.sun).filter(f -> f.formulaType.is(1)).findFirst().orElse(null)), is(-1));
     assertThat(Arrays.stream(Formula.sun).sorted().toArray(Formula[]::new)[Formula.sun.length - 2].angularVelocity, is(35999.0));
+
+    assertThat(FormulaType.valueOf("Normal"), is(FormulaType.Normal));
+    assertThat(FormulaType.valueOf(0), is(FormulaType.Normal));
+
+    assertThat(FormulaType.valueOf("Exclusive"), is(FormulaType.Exclusive));
+    assertThat(FormulaType.valueOf(1), is(FormulaType.Exclusive));
   }
 
   @Test

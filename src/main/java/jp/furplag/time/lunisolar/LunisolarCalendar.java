@@ -15,8 +15,6 @@
  */
 package jp.furplag.time.lunisolar;
 
-import java.time.Duration;
-import java.time.temporal.ChronoUnit;
 import java.time.temporal.ValueRange;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -24,8 +22,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
-
-import jp.furplag.time.Millis;
 
 public class LunisolarCalendar {
 
@@ -73,19 +69,5 @@ public class LunisolarCalendar {
     // @formatter:on
 
     return Collections.unmodifiableList(monthsOfYear);
-  }
-
-  @Override
-  public String toString() {
-    return new StringBuilder()
-      .append(Millis.toInstant(rangeOfYear.getMinimum()).atOffset(lunisolar.zoneOffset).toString())
-      .append(" - ")
-      .append(Millis.toInstant(rangeOfYear.getMaximum()).atOffset(lunisolar.zoneOffset).toString())
-      .append(" ( ")
-      .append(Duration.of(rangeOfYear.getMaximum() - rangeOfYear.getMinimum(), ChronoUnit.MILLIS).toDays())
-      .append(" days ) ")
-      .append("\n")
-      .append(monthsOfYear.stream().map(Objects::toString).collect(Collectors.joining("\n\t","\t","")))
-      .toString();
   }
 }

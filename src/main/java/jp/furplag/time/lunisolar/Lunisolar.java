@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -78,12 +79,12 @@ public abstract class Lunisolar {
    */
   static double doOurOwnBest(final Map<Double, Double> results, final double _default) {
     // @formatter:off
-    return Objects.requireNonNull(results.entrySet()).stream()
+    return Optional.ofNullable(results).orElse(new HashMap<>()).entrySet().stream()
       .sorted(new Comparator<Map.Entry<Double, Double>>() {
         @Override public int compare(Entry<Double, Double> o1, Entry<Double, Double> o2) {
           return o1.getKey().compareTo(o2.getKey());
         }
-      }).mapToDouble(Map.Entry::getValue).min().orElse(_default);
+      }).mapToDouble(Map.Entry::getValue).findFirst().orElse(_default);
     // @formatter:on
   }
 
@@ -131,7 +132,14 @@ public abstract class Lunisolar {
     long dayOfTemporalFirst = asStartOfDay(temporalFirst);
     long dayOfTemporalNext = asStartOfDay(temporalNext);
 
-    return dayOfTemporalFirst < dayOfMidClimateOfFirst ? (dayOfMidClimateOfFirst < dayOfTemporalNext ? temporalFirst : temporalNext) : dayOfTemporalFirst > dayOfMidClimateOfFirst ? latestNewMoon(plusMonth(temporalFirst, -.1)) : temporalFirst < midClimateOfFirst ? temporalFirst : temporalNext;
+    // @formatter:off
+    return
+      dayOfTemporalFirst < dayOfMidClimateOfFirst ?
+        (dayOfMidClimateOfFirst < dayOfTemporalNext ? temporalFirst : temporalNext) :
+      dayOfTemporalFirst > dayOfMidClimateOfFirst ?
+        latestNewMoon(plusMonth(temporalFirst, -.1)) :
+      temporalFirst < midClimateOfFirst ? temporalFirst : temporalNext;
+    // @formatter:on
   }
 
   /**

@@ -18,30 +18,36 @@ package jp.furplag.time.lunisolar;
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
 
-import java.time.Instant;
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
-import java.time.temporal.ChronoField;
+import java.util.Comparator;
 import java.util.stream.LongStream;
 
 import org.junit.Test;
 
-import jp.furplag.time.Julian;
-
-public class StandardLunisolarTest {
+public class LunarMonthTest {
 
   @Test
   public void test() {
-    final OffsetDateTime t = Instant.parse("1844-12-01T12:00:00.000Z").atOffset(ZoneOffset.ofHours(9));
-    final StandardLunisolar lunisolar = new StandardLunisolar(365.242234, 29.530588, ZoneOffset.ofHours(9));
     // @formatter:off
     assertThat(
-      LongStream.rangeClosed(-5000, 5000)
-      .mapToObj(y->new LunisolarCalendar(lunisolar, Julian.ofEpochMilli(t.with(ChronoField.YEAR, y).toInstant().toEpochMilli())))
-      .filter(c->c.monthsOfYear.get(0).monthOfYear != 1 || c.monthsOfYear.get(c.monthsOfYear.size() - 1).monthOfYear != 12)
-      .count(), is(0L))
+      LongStream.of(0, 1, 2, 3)
+      .mapToObj(l -> new LunarMonth(l, l + 1L, null))
+      .min(new Comparator<LunarMonth>() {
+        @Override
+        public int compare(LunarMonth o1, LunarMonth o2) {
+          return o1.compareTo(o2);
+        }}).orElse(new LunarMonth(10, 11, null)).toString()
+    , is(new LunarMonth(0, 1, null).toString()));
+
+    assertThat(
+      LongStream.of(0, 1, 2, 3)
+      .mapToObj(l -> new LunarMonth(l, l + 1L, null))
+      .max(new Comparator<LunarMonth>() {
+        @Override
+        public int compare(LunarMonth o1, LunarMonth o2) {
+          return o1.compareTo(o2);
+        }}).orElse(new LunarMonth(10, 11, null)).toString()
+    , is(new LunarMonth(3, 4, null).toString()));
     // @formatter:on
-    ;
   }
 
 }
