@@ -19,6 +19,7 @@ package jp.furplag.time.lunisolar;
 import java.io.Serializable;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.ValueRange;
 import java.util.ArrayList;
@@ -88,9 +89,9 @@ public final class LunarMonth implements Comparable<LunarMonth>, Serializable {
       (intercalaryInCalendar ? "閏" : "")
       + monthOfYear
       + ", range: "
-      + Instant.ofEpochMilli(range.getMinimum())
+      + Instant.ofEpochMilli(range.getMinimum()).atZone(ZoneId.systemDefault())
       + " - "
-      + Instant.ofEpochMilli(range.getMaximum())
+      + Instant.ofEpochMilli(range.getMaximum()).atZone(ZoneId.systemDefault())
       + " ("
       + Duration.of(range.getMaximum() + 1 - range.getMinimum(), ChronoUnit.MILLIS).toDays()
       + ")"
