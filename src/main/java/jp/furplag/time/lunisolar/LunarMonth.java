@@ -21,8 +21,12 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.ValueRange;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import jp.furplag.time.Millis;
 import jp.furplag.time.lunisolar.SolarTerm.MidClimate;
@@ -58,11 +62,23 @@ public final class LunarMonth implements Comparable<LunarMonth>, Serializable {
   }
 
   boolean intercalaryze(boolean intercalaryed) {
+    boolean _intercalaryed = intercalaryed;
     if (intercalary && !intercalaryed) {
       intercalaryInCalendar = true;
+      _intercalaryed = true;
     }
 
-    return intercalary && !intercalaryed;
+    return _intercalaryed;
+  }
+
+  static boolean intercalaryze(Stream<LunarMonth> lunarMonths, boolean intercalaryed) {
+    final boolean[] _intercalaryed = {intercalaryed};
+    Optional.ofNullable(lunarMonths).orElse(new ArrayList<LunarMonth>().stream())
+    .filter(Objects::nonNull).forEach(lunarMonth -> {
+      _intercalaryed[0] = lunarMonth.intercalaryze(_intercalaryed[0]);
+    });
+
+    return _intercalaryed[0];
   }
 
   @Override
