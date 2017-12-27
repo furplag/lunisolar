@@ -22,6 +22,8 @@ import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.time.temporal.ChronoField;
+import java.util.ArrayList;
+import java.util.stream.Collectors;
 import java.util.stream.LongStream;
 
 import org.junit.Test;
@@ -36,10 +38,11 @@ public class StandardLunisolarTest {
     final StandardLunisolar lunisolar = new StandardLunisolar(365.242234, 29.530588, ZoneOffset.ofHours(9));
     // @formatter:off
     assertThat(
-      LongStream.rangeClosed(-5000, 5000)
+      LongStream.rangeClosed(1844, 2300)
       .mapToObj(y->new LunisolarCalendar(lunisolar, Julian.ofEpochMilli(t.with(ChronoField.YEAR, y).toInstant().toEpochMilli())))
       .filter(c->c.monthsOfYear.get(0).monthOfYear != 1 || c.monthsOfYear.get(c.monthsOfYear.size() - 1).monthOfYear != 12)
-      .count(), is(0L))
+      .collect(Collectors.toList())
+      , is(new ArrayList<>()))
     // @formatter:on
     ;
   }

@@ -54,15 +54,16 @@ public final class LunarMonth implements Comparable<LunarMonth>, Serializable {
 
   @Override
   public int compareTo(LunarMonth o) {
-    return Double.compare(range.getMinimum(), o.range.getMinimum());
+    return Long.compare(range.getMinimum(), o.range.getMinimum());
   }
 
   boolean intercalaryze(boolean intercalaryed) {
     if (intercalary && !intercalaryed) {
       intercalaryInCalendar = true;
+      intercalaryed = true;
     }
 
-    return intercalary && !intercalaryed;
+    return intercalaryed;
   }
 
   @Override

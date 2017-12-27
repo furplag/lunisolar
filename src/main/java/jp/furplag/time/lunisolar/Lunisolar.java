@@ -136,9 +136,9 @@ public abstract class Lunisolar {
     return
       dayOfTemporalFirst < dayOfMidClimateOfFirst ?
         (dayOfMidClimateOfFirst < dayOfTemporalNext ? temporalFirst : temporalNext) :
-      dayOfTemporalFirst > dayOfMidClimateOfFirst ?
-        latestNewMoon(plusMonth(temporalFirst, -.1)) :
-      temporalFirst < midClimateOfFirst ? temporalFirst : temporalNext;
+      dayOfTemporalFirst > dayOfMidClimateOfFirst ? latestNewMoon(plusMonth(temporalFirst, -.1)) :
+        temporalFirst < midClimateOfFirst ? temporalFirst :
+      temporalNext;
     // @formatter:on
   }
 
