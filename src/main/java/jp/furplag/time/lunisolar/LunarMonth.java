@@ -60,10 +60,9 @@ public final class LunarMonth implements Comparable<LunarMonth>, Serializable {
   boolean intercalaryze(boolean intercalaryed) {
     if (intercalary && !intercalaryed) {
       intercalaryInCalendar = true;
-      intercalaryed = true;
     }
 
-    return intercalaryed;
+    return intercalary && !intercalaryed;
   }
 
   @Override
