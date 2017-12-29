@@ -17,10 +17,6 @@
 package jp.furplag.time.lunisolar;
 
 import java.io.Serializable;
-import java.time.Duration;
-import java.time.Instant;
-import java.time.ZoneId;
-import java.time.temporal.ChronoUnit;
 import java.time.temporal.ValueRange;
 import java.util.Comparator;
 import java.util.List;
@@ -32,6 +28,9 @@ import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+
+import jp.furplag.data.json.Jsonifier;
 import jp.furplag.time.Millis;
 import jp.furplag.time.lunisolar.SolarTerm.MidClimate;
 import jp.furplag.time.lunisolar.SolarTerm.PreClimate;
@@ -104,15 +103,14 @@ public final class LunarMonth implements Comparable<LunarMonth>, Serializable {
     });
   }
 
+  @Nonnull
   private static List<LunarMonth> monthOfYear(final @Nonnull List<LunarMonth> lunarMonths) {
     final LunarMonth january = Objects.requireNonNull(firstOf(lunarMonths, 1));
     final LunarMonth december = Objects.requireNonNull(firstOf(lunarMonths.stream().filter(e -> january.range.getMinimum() < e.range.getMinimum()).collect(Collectors.toList()), 12));
 
-    List<LunarMonth> _lunarMonths = lunarMonths.stream()
+    return lunarMonths.stream()
       .filter(e -> january.range.getMinimum() <= e.range.getMinimum() && e.range.getMinimum() <= december.range.getMinimum())
       .collect(Collectors.toList());
-
-    return _lunarMonths;
   }
 
   @Override
@@ -137,23 +135,8 @@ public final class LunarMonth implements Comparable<LunarMonth>, Serializable {
   @Override
   public String toString() {
     // @formatter:off
-    return
-      (intercalary ? "閏" : "")
-      + monthOfYear
-      + ", range: "
-      + Instant.ofEpochMilli(range.getMinimum()).atZone(ZoneId.systemDefault())
-      + " - "
-      + Instant.ofEpochMilli(range.getMaximum()).atZone(ZoneId.systemDefault())
-      + " ("
-      + Duration.of(range.getMaximum() + 1 - range.getMinimum(), ChronoUnit.MILLIS).toDays()
-      + ")"
-      + ", intercalaryable: "
-      + intercalaryable
-      + ", preClimates: "
-      + preClimates.stream().map(c->c.longitude).collect(Collectors.toList()).toString()
-      + ", midClimates: "
-      + midClimates.stream().map(c->c.longitude).collect(Collectors.toList()).toString()
-      ;
+    try {return Jsonifier.serialize(this);} catch (JsonProcessingException e) {}
     // @formatter:on
+    return null;
   }
 }
