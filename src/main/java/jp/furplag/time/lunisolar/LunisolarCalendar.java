@@ -23,6 +23,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import javax.annotation.Nonnull;
+
 import jp.furplag.time.Millis;
 
 public final class LunisolarCalendar {
@@ -33,8 +35,8 @@ public final class LunisolarCalendar {
 
   final List<LunarMonth> monthsOfYear;
 
-  public LunisolarCalendar(Lunisolar lunisolar, double julianDate) {
-    this.lunisolar = Objects.requireNonNull(lunisolar);
+  public LunisolarCalendar(@Nonnull Lunisolar lunisolar, double julianDate) {
+    this.lunisolar = lunisolar;
     final List<SolarTerm> solarTerms = lunisolar.termsOfBase(julianDate);
     monthsOfYear = LunarMonth.constructs(solarTerms, lunisolar.termsToFirstDays(solarTerms).stream().mapToLong(Millis::ofJulian).mapToObj(Long::valueOf).collect(Collectors.toList()));
     rangeOfYear = ValueRange.of(monthsOfYear.get(0).range.getMinimum(), monthsOfYear.get(monthsOfYear.size() - 1).range.getMaximum());
