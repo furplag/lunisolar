@@ -21,6 +21,7 @@ import java.time.temporal.ValueRange;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -106,11 +107,10 @@ public final class LunarMonth implements Comparable<LunarMonth>, Serializable {
   @Nonnull
   private static List<LunarMonth> monthOfYear(final @Nonnull List<LunarMonth> lunarMonths) {
     final LunarMonth january = Objects.requireNonNull(firstOf(lunarMonths, 1));
-    final LunarMonth december = Objects.requireNonNull(firstOf(lunarMonths.stream().filter(e -> january.range.getMinimum() < e.range.getMinimum()).collect(Collectors.toList()), 12));
+    final LunarMonth december = Objects.requireNonNull(firstOf(filtered(lunarMonths.stream(), e -> january.range.getMinimum() < e.range.getMinimum()), 12));
+    final ValueRange range = ValueRange.of(january.range.getMinimum(), december.range.getMinimum());
 
-    return lunarMonths.stream()
-      .filter(e -> january.range.getMinimum() <= e.range.getMinimum() && e.range.getMinimum() <= december.range.getMinimum())
-      .collect(Collectors.toList());
+    return filtered(lunarMonths.stream(), (e) -> range.isValidValue(e.range.getMinimum()));
   }
 
   @Override
@@ -130,6 +130,10 @@ public final class LunarMonth implements Comparable<LunarMonth>, Serializable {
 
   private static int normalize(final int monthOfYear, final int normalizr) {
     return (monthOfYear % normalizr == 0 ? normalizr : monthOfYear % normalizr);
+  }
+
+  private static List<LunarMonth> filtered(final @Nonnull Stream<LunarMonth> stream, Predicate<LunarMonth> predicate) {
+    return stream.filter(predicate).collect(Collectors.toList());
   }
 
   @Override
