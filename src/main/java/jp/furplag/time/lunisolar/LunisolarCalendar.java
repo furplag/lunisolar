@@ -38,7 +38,7 @@ public final class LunisolarCalendar {
   public LunisolarCalendar(@Nonnull Lunisolar lunisolar, double julianDate) {
     this.lunisolar = lunisolar;
     final List<SolarTerm> solarTerms = lunisolar.termsOfBase(julianDate);
-    monthsOfYear = LunarMonth.constructs(solarTerms, lunisolar.termsToFirstDays(solarTerms).stream().mapToLong(Millis::ofJulian).mapToObj(Long::valueOf).collect(Collectors.toList()));
+    monthsOfYear = LunarMonth.constructs(solarTerms, lunisolar.termsToFirstDays(solarTerms));
     rangeOfYear = ValueRange.of(monthsOfYear.get(0).range.getMinimum(), monthsOfYear.get(monthsOfYear.size() - 1).range.getMaximum());
   }
 

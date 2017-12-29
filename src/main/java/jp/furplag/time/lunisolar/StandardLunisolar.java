@@ -23,9 +23,10 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import javax.annotation.Nonnull;
 
 import jp.furplag.time.Julian;
 import jp.furplag.time.Millis;
@@ -68,14 +69,13 @@ public final class StandardLunisolar extends Lunisolar {
     return counter < loopLimit ? (numeric + floating) : (doOurOwnBest(results, (numeric + floating)));
   }
 
-  protected List<Double> termsToFirstDays(List<SolarTerm> solarTerms) {
+  @Override
+  protected List<Long> termsToFirstDays(@Nonnull List<SolarTerm> solarTerms) {
     // @formatter:off
-    return Optional.ofNullable(solarTerms).orElse(new ArrayList<>()).stream()
-      .mapToDouble(t->t.julianDate)
-      .map(this::latestNewMoon)
-      .mapToLong(this::asStartOfDay)
+    return solarTerms.stream()
+      .mapToDouble(solarTerm -> solarTerm.julianDate)
+      .mapToObj(julianDate -> asStartOfDay(latestNewMoon(julianDate)))
       .distinct()
-      .mapToObj(Julian::ofEpochMilli)
       .sorted()
       .collect(Collectors.toList());
     // @formatter:on
@@ -88,11 +88,6 @@ public final class StandardLunisolar extends Lunisolar {
       final SolarTerm solarTerm = lastOf(solarTerms);
       solarTerms.add(SolarTerm.ofClosest(solarTerm.julianDate, solarTerm.longitude + 15, this));
     } while (solarTerms.stream().filter(e -> e.longitude == 270).count() != 3);
-
-    solarTerms.add(SolarTerm.ofClosest(lastOf(solarTerms).julianDate, 285, this));
-    solarTerms.add(SolarTerm.ofClosest(lastOf(solarTerms).julianDate, 300, this));
-    solarTerms.add(SolarTerm.ofClosest(lastOf(solarTerms).julianDate, 315, this));
-    solarTerms.add(SolarTerm.ofClosest(lastOf(solarTerms).julianDate, 330, this));
 
     return solarTerms;
   }

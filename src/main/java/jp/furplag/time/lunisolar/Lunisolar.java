@@ -21,16 +21,12 @@ import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.time.temporal.ChronoField;
 import java.time.temporal.ChronoUnit;
-import java.time.temporal.ValueRange;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 import jp.furplag.time.Julian;
 import jp.furplag.time.lunisolar.misc.Astror;
@@ -129,7 +125,7 @@ public abstract class Lunisolar {
    * @param solarTerms {@link SolarTerm} of the year
    * @return
    */
-  abstract List<Double> termsToFirstDays(List<SolarTerm> solarTerms);
+  abstract List<Long> termsToFirstDays(List<SolarTerm> solarTerms);
 
   /**
    * returns the list of {@link SolarTerm} between a winter solstice of the year that contains specified instant and last year's one .
@@ -171,26 +167,6 @@ public abstract class Lunisolar {
     } while (Math.abs(diffOfNumeric + diffOfFloating) > precision && counter < loopLimit);
 
     return counter < loopLimit ? (numeric + floating) : (doOurOwnBest(results, (numeric + floating)));
-  }
-
-  /**
-   * optimize the lunar months to fit the year .
-   *
-   * @param solarTerms {@link SolarTerm} of the year
-   * @param firstDaysOfYear first days of the year
-   * @param rangeOfYear the days of year
-   * @return lunar calendar in the year
-   */
-  protected List<LunarMonth> monthsOfYear(List<SolarTerm> solarTerms, List<Long> firstDaysOfYear, ValueRange rangeOfYear) {
-    // @formatter:off
-    return
-      Objects.isNull(firstDaysOfYear) ? null :
-      firstDaysOfYear.isEmpty() ? null :
-      IntStream.range(1, firstDaysOfYear.size())
-        .mapToObj(index -> new LunarMonth(firstDaysOfYear.get(index - 1), firstDaysOfYear.get(index) - 1, solarTerms))
-        .filter(month -> rangeOfYear.isValidValue(month.range.getMinimum()))
-        .collect(Collectors.toList());
-    // @formatter:on
   }
 
   /**
