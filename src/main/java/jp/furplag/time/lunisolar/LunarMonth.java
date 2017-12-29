@@ -106,11 +106,13 @@ public final class LunarMonth implements Comparable<LunarMonth>, Serializable {
 
   private static List<LunarMonth> monthOfYear(final @Nonnull List<LunarMonth> lunarMonths) {
     final LunarMonth january = Objects.requireNonNull(firstOf(lunarMonths, 1));
-    final LunarMonth december = Objects.requireNonNull(firstOf(lunarMonths, 12));
+    final LunarMonth december = Objects.requireNonNull(firstOf(lunarMonths.stream().filter(e -> january.range.getMinimum() < e.range.getMinimum()).collect(Collectors.toList()), 12));
 
-    return lunarMonths.stream()
-      .filter(e -> january.range.getMinimum() <= e.range.getMinimum() && e.range.getMinimum() <= december.range.getMaximum())
+    List<LunarMonth> _lunarMonths = lunarMonths.stream()
+      .filter(e -> january.range.getMinimum() <= e.range.getMinimum() && e.range.getMinimum() <= december.range.getMinimum())
       .collect(Collectors.toList());
+
+    return _lunarMonths;
   }
 
   @Override
