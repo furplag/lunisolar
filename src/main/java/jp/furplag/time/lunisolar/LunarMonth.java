@@ -99,7 +99,7 @@ public final class LunarMonth implements Comparable<LunarMonth>, Serializable {
     monthsOfWinterSolstice.forEach(e -> {
       monthOfYear[0] += e.intercalary ? 0 : 1;
       if (e.monthOfYear == 0) {
-        e.monthOfYear = (monthOfYear[0] % 12 == 0 ? 12 : monthOfYear[0] % 12);
+        e.monthOfYear = normalize(monthOfYear[0], 12);
       }
     });
   }
@@ -118,21 +118,9 @@ public final class LunarMonth implements Comparable<LunarMonth>, Serializable {
     return Long.compare(range.getMinimum(), o.range.getMinimum());
   }
 
-  public boolean isIntercalary() {
-    return intercalary;
-  }
-
-  public boolean isIntercalaryable() {
-    return intercalaryable;
-  }
-
-  public boolean isNovember() {
-    return november;
-  }
-
   @Nullable
   private static LunarMonth firstNovember(final @Nonnull Stream<LunarMonth> lunarMonths, final LunarMonth start) {
-    return lunarMonths.filter(LunarMonth::isNovember).filter(e -> (start == null ? Long.MIN_VALUE : start.range.getMinimum()) < e.range.getMinimum()).sorted().findFirst().orElse(null);
+    return lunarMonths.filter(e -> e.november).filter(e -> (start == null ? Long.MIN_VALUE : start.range.getMinimum()) < e.range.getMinimum()).sorted().findFirst().orElse(null);
   }
 
   @Nullable
