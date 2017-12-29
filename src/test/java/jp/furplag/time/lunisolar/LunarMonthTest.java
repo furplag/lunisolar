@@ -18,14 +18,10 @@ package jp.furplag.time.lunisolar;
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
 
-import java.time.Instant;
-import java.time.ZoneOffset;
 import java.util.Comparator;
 import java.util.stream.LongStream;
 
 import org.junit.Test;
-
-import jp.furplag.time.Julian;
 
 public class LunarMonthTest {
 
@@ -52,10 +48,5 @@ public class LunarMonthTest {
         }}).orElse(new LunarMonth(10, 11, null)).toString()
     , is(new LunarMonth(3, 4, null).toString()));
     // @formatter:on
-    final StandardLunisolar lunisolar = new StandardLunisolar(365.242234, 29.530588, ZoneOffset.ofHours(9));
-    assertThat(new LunisolarCalendar(lunisolar, Julian.ofEpochMilli(Instant.parse("2017-09-01T00:00:00.000Z").toEpochMilli())).monthsOfYear.get(0).intercalaryze(false), is(false));
-    assertThat(new LunisolarCalendar(lunisolar, Julian.ofEpochMilli(Instant.parse("2017-09-01T00:00:00.000Z").toEpochMilli())).monthsOfYear.get(0).intercalaryze(true), is(true));
-    assertThat(new LunisolarCalendar(lunisolar, Julian.ofEpochMilli(Instant.parse("2017-09-01T00:00:00.000Z").toEpochMilli())).monthsOfYear.get(5).intercalaryze(false), is(true));
-    assertThat(new LunisolarCalendar(lunisolar, Julian.ofEpochMilli(Instant.parse("2017-09-01T00:00:00.000Z").toEpochMilli())).monthsOfYear.get(5).intercalaryze(true), is(true));
   }
 }

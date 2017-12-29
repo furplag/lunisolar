@@ -13,17 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package jp.furplag.time.lunisolar;
 
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
 import java.time.temporal.ValueRange;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
-public class LunisolarCalendar {
+import jp.furplag.time.Millis;
+
+public final class LunisolarCalendar {
 
   final Lunisolar lunisolar;
 
@@ -33,37 +35,22 @@ public class LunisolarCalendar {
 
   public LunisolarCalendar(Lunisolar lunisolar, double julianDate) {
     this.lunisolar = Objects.requireNonNull(lunisolar);
-    this.rangeOfYear = lunisolar.rangeOfYear(julianDate);
     final List<SolarTerm> solarTerms = lunisolar.termsOfBase(julianDate);
-    List<LunarMonth> monthsOfYear = lunisolar.monthsOfYear(solarTerms, lunisolar.firstDaysOfYear(solarTerms, rangeOfYear), rangeOfYear);
-    this.monthsOfYear = monthsOfYear.size() > 12 ? leapmonthsOfYear(monthsOfYear) : monthsOfYear(monthsOfYear);
+    monthsOfYear = LunarMonth.constructs(solarTerms, lunisolar.termsToFirstDays(solarTerms).stream().mapToLong(Millis::ofJulian).mapToObj(Long::valueOf).collect(Collectors.toList()));
+    rangeOfYear = ValueRange.of(monthsOfYear.get(0).range.getMinimum(), monthsOfYear.get(monthsOfYear.size() - 1).range.getMaximum());
   }
 
-  private static List<LunarMonth> monthsOfYear(final List<LunarMonth> monthsOfYear) {
-    final List<LunarMonth> _monthsOfYear = Optional.ofNullable(monthsOfYear).orElse(new ArrayList<>());
-
-    // @formatter:off
-    return Collections.unmodifiableList(
-      _monthsOfYear.stream()
-      .map(e -> {
-        e.monthOfYear = _monthsOfYear.indexOf(e) + 1;
-
-        return e;
-      }).collect(Collectors.toList()));
-    // @formatter:on
-  }
-
-  private static List<LunarMonth> leapmonthsOfYear(final List<LunarMonth> monthsOfYear) {
-    final boolean[] intercalaryed = {false};
-    // @formatter:off
-    LunarMonth.intercalaryze(monthsOfYear.stream().filter(monthOfYear -> monthOfYear.intercalary), intercalaryed[0]);
-    final int[] theMonth = {0};
-    monthsOfYear.forEach(e -> {
-      if (!e.intercalaryInCalendar) theMonth[0]++;
-      e.monthOfYear = theMonth[0];
-    });
-    // @formatter:on
-
-    return Collections.unmodifiableList(monthsOfYear);
+  @Override
+  public String toString() {
+    return new StringBuilder()
+      .append(Millis.toInstant(rangeOfYear.getMinimum()).atOffset(lunisolar.zoneOffset).toString())
+      .append(" - ")
+      .append(Millis.toInstant(rangeOfYear.getMaximum()).atOffset(lunisolar.zoneOffset).toString())
+      .append(" ( ")
+      .append(Duration.of(rangeOfYear.getMaximum() - rangeOfYear.getMinimum(), ChronoUnit.MILLIS).toDays())
+      .append(" days ) ")
+      .append("\n")
+      .append(monthsOfYear.stream().map(Objects::toString).collect(Collectors.joining("\n\t","\t","")))
+      .toString();
   }
 }

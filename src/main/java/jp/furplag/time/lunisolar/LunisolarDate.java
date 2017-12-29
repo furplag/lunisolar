@@ -15,6 +15,15 @@
  */
 package jp.furplag.time.lunisolar;
 
+import java.time.Duration;
+import java.time.Instant;
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
+
+import jp.furplag.time.Julian;
+import jp.furplag.time.JulianDayNumber;
+import jp.furplag.time.Millis;
+
 public class LunisolarDate {
 
   final double julianDate;
@@ -29,7 +38,7 @@ public class LunisolarDate {
 
   final int monthOfYear;
 
-  final int dayOfMonth;
+  final long dayOfMonth;
 
   final boolean intercalary;
 
@@ -37,17 +46,58 @@ public class LunisolarDate {
 
   final int earthlyBranch;
 
-  public LunisolarDate(double julianDate, long julianDayNumber, long epochMilli, long year, int yearOfEra, int monthOfYear, int dayOfMonth, boolean intercalary, int heavenlyStem, int earthlyBranch) {
-    super();
+  public static final LunisolarDate ofJulian(final double julianDate) {
+    return new LunisolarDate(julianDate);
+  }
+
+  public static final LunisolarDate ofEpochMilli(final long epochMilli) {
+    return new LunisolarDate(Julian.ofEpochMilli(epochMilli));
+  }
+
+  private LunisolarDate(double julianDate) {
     this.julianDate = julianDate;
-    this.julianDayNumber = julianDayNumber;
-    this.epochMilli = epochMilli;
-    this.year = year;
-    this.yearOfEra = yearOfEra;
-    this.monthOfYear = monthOfYear;
-    this.dayOfMonth = dayOfMonth;
-    this.intercalary = intercalary;
-    this.heavenlyStem = heavenlyStem;
-    this.earthlyBranch = earthlyBranch;
+    julianDayNumber = JulianDayNumber.ofJulian(julianDate);
+    epochMilli = Millis.ofJulian(julianDate);
+    Lunisolar lunisolar = Lunisolar.ofJulian(julianDate);
+    LunisolarCalendar lunisolarCalendar = new LunisolarCalendar(lunisolar, julianDate);
+    System.out.println(lunisolarCalendar.monthsOfYear.size());
+    if (!lunisolarCalendar.rangeOfYear.isValidValue(lunisolar.asStartOfDay(julianDate))) {
+      lunisolarCalendar = new LunisolarCalendar(lunisolar, lunisolar.plusMonth(julianDate, -2.1));
+    }
+    LunarMonth month = lunisolarCalendar.monthsOfYear.stream().filter(e -> e.range.isValidValue(lunisolar.asStartOfDay(julianDate))).findFirst().orElse(null);
+    year = lunisolar.atOffset(Instant.ofEpochMilli(lunisolarCalendar.monthsOfYear.stream().filter(e -> e.november).findAny().orElse(null).range.getMinimum())).getYear();
+    monthOfYear = month.monthOfYear;
+    dayOfMonth = Duration.between(Instant.ofEpochMilli(month.range.getMinimum()), Instant.ofEpochMilli(lunisolar.asStartOfDay(julianDate))).toDays() + 1;
+    intercalary = month.intercalary;
+
+    yearOfEra = (int) year;
+    heavenlyStem = 0;
+    earthlyBranch = 0;
+
+    lunisolarCalendar.monthsOfYear.stream().forEach(e -> {
+      System.out.print(Millis.toInstant(e.range.getMinimum()).atZone(ZoneId.systemDefault()));
+      System.out.print(" - ");
+      System.out.print(Millis.toInstant(e.range.getMaximum()).atZone(ZoneId.systemDefault()));
+      System.out.print(" : ");
+      System.out.print(Millis.toInstant(epochMilli).atZone(ZoneId.systemDefault()));
+      System.out.print(" ? ");
+      System.out.println(e.range.isValidValue(lunisolar.asStartOfDay(julianDate)));
+    });
+  }
+
+  @Override
+  public String toString() {
+    return new StringBuilder()
+      .append(year)
+      .append("年")
+      .append(intercalary ? "閏" : "").append(monthOfYear).append("月")
+      .append(dayOfMonth).append("日")
+      .toString()
+      ;
+  }
+
+  public static void main(String[] args) {
+    System.out.println(LunisolarDate.ofEpochMilli(OffsetDateTime.parse("2033-12-01T00:00+09:00").toInstant().toEpochMilli()).toString());
+    System.out.println(new LunisolarCalendar(Lunisolar.ofJulian(Julian.ofEpochMilli(OffsetDateTime.parse("2033-12-01T00:00+09:00").toInstant().toEpochMilli())), Julian.ofEpochMilli(OffsetDateTime.parse("2033-12-01T00:00+09:00").toInstant().toEpochMilli())).monthsOfYear.size());
   }
 }

@@ -13,18 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package jp.furplag.time.lunisolar;
 
+import java.time.Instant;
 import java.time.ZoneOffset;
-import java.time.temporal.ValueRange;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
+import jp.furplag.time.Julian;
+import jp.furplag.time.Millis;
 import jp.furplag.time.lunisolar.misc.Astror;
 import jp.furplag.time.lunisolar.misc.orrery.EclipticLongitude;
 
@@ -64,29 +68,94 @@ public final class StandardLunisolar extends Lunisolar {
     return counter < loopLimit ? (numeric + floating) : (doOurOwnBest(results, (numeric + floating)));
   }
 
-  @Override
-  List<Long> firstDaysOfYear(List<SolarTerm> solarTerms, ValueRange rangeOfYear) {
+  protected List<Double> termsToFirstDays(List<SolarTerm> solarTerms) {
     // @formatter:off
-    return Optional.ofNullable(solarTerms).orElse(new ArrayList<>())
-      .stream()
-      .map(solarTerm -> solarTerm.julianDate)
+    return Optional.ofNullable(solarTerms).orElse(new ArrayList<>()).stream()
+      .mapToDouble(t->t.julianDate)
       .map(this::latestNewMoon)
       .mapToLong(this::asStartOfDay)
       .distinct()
-      .mapToObj(Long::valueOf)
+      .mapToObj(Julian::ofEpochMilli)
+      .sorted()
       .collect(Collectors.toList());
     // @formatter:on
   }
 
   @Override
   List<SolarTerm> termsOfBase(double julianDate) {
-    List<SolarTerm> terms = new ArrayList<>();
-    int deg = 360;
-    final double winterSolsticeOfLastYear = closestTerm(firstDayOfYear(julianDate), 270d);
+    List<SolarTerm> solarTerms = new ArrayList<>(Arrays.asList(SolarTerm.ofClosest(plusMonth(winterSolstice(julianDate), -13), 255, this)));
     do {
-      terms.add(SolarTerm.ofClosest(terms.isEmpty() ? plusMonth(winterSolsticeOfLastYear, 14) : terms.get(terms.size() - 1).julianDate, deg - (15 * (terms.size())), this));
-    } while (terms.get(terms.size() - 1).julianDate > winterSolsticeOfLastYear);
+      final SolarTerm solarTerm = lastOf(solarTerms);
+      solarTerms.add(SolarTerm.ofClosest(solarTerm.julianDate, solarTerm.longitude + 15, this));
+    } while (solarTerms.stream().filter(e -> e.longitude == 270).count() != 3);
 
-    return terms.stream().sorted().collect(Collectors.toList());
+    solarTerms.add(SolarTerm.ofClosest(lastOf(solarTerms).julianDate, 285, this));
+    solarTerms.add(SolarTerm.ofClosest(lastOf(solarTerms).julianDate, 300, this));
+    solarTerms.add(SolarTerm.ofClosest(lastOf(solarTerms).julianDate, 315, this));
+    solarTerms.add(SolarTerm.ofClosest(lastOf(solarTerms).julianDate, 330, this));
+
+    return solarTerms;
   }
+
+  public static void main(String[] args) {
+    List<SolarTerm> solarTerms = Kyoho.termsOfBase(Julian.ofEpochMilli(Instant.parse("2032-12-31T15:00:00.000Z").toEpochMilli()));
+    printr(solarTerms.stream());
+    List<Long> firstDays = Kyoho.termsToFirstDays(solarTerms).stream().map(Millis::ofJulian).collect(Collectors.toList());
+    printr(firstDays.stream().map(Millis::toInstant).map(Kyoho::atOffset));
+
+    List<LunarMonth> monthOfYear = LunarMonth.constructs(solarTerms, firstDays);
+    printr(monthOfYear.stream());
+//
+//    final LunarMonth lastWinterSolstice = monthOfYear.stream().filter(e -> e.november).map(e -> {e.monthOfYear = 11; return e;}).findFirst().orElse(null);
+//    final LunarMonth winterSolstice = monthOfYear.stream().filter(e -> e.november && e.compareTo(lastWinterSolstice) > 0).findFirst().orElse(null);
+//    final ValueRange termRange = ValueRange.of(lastWinterSolstice.range.getMinimum(), winterSolstice.range.getMinimum() - 1);
+//    List<LunarMonth> termTable = monthOfYear.stream().filter(e -> termRange.isValidValue(e.range.getMinimum())).collect(Collectors.toList());
+//    final boolean hasIntercalary = termTable.size() > 12;
+//    final int[] theMonth = {10};
+//    termTable.stream().filter(e -> hasIntercalary && e.intercalaryable).findFirst().ifPresent(e -> e.intercalary = true);
+//    termTable.forEach(e -> {
+//      theMonth[0] += e.intercalary ? 0 : 1;
+//      if (e.monthOfYear == 0) {
+//        e.monthOfYear = (theMonth[0] % 12 == 0 ? 12 : theMonth[0] % 12);
+//      }
+//    });
+//    final LunarMonth nextWinterSolstice = monthOfYear.stream().filter(e -> e.november && e.compareTo(winterSolstice) > 0).findFirst().orElse(null);
+//    final ValueRange nextTermRange = ValueRange.of(winterSolstice.range.getMinimum(), nextWinterSolstice.range.getMinimum() - 1);
+//    List<LunarMonth> nextTermTable = monthOfYear.stream().filter(e -> nextTermRange.isValidValue(e.range.getMinimum())).collect(Collectors.toList());
+//    final boolean hasIntercalaryNext = nextTermTable.size() > 12;
+//    theMonth[0] = 10;
+//    nextTermTable.stream().filter(e -> hasIntercalaryNext && e.intercalaryable).findFirst().ifPresent(e -> e.intercalary = true);
+//    nextTermTable.forEach(e -> {
+//      theMonth[0] += e.intercalary ? 0 : 1;
+//      if (e.monthOfYear == 0) {
+//        e.monthOfYear = (theMonth[0] % 12 == 0 ? 12 : theMonth[0] % 12);
+//      }
+//    });
+//
+////    if (winterSolstice.monthOfYear != 11) {
+////      final LunarMonth nextWinterSolstice = monthOfYear.stream().filter(e -> e.november && e.compareTo(winterSolstice) > 0).findFirst().orElse(null);
+////      final ValueRange nextTermRange = ValueRange.of(winterSolstice.range.getMinimum(), nextWinterSolstice.range.getMaximum());
+////      List<LunarMonth> nextTermTable = monthOfYear.stream().filter(e -> nextTermRange.isValidValue(e.range.getMinimum())).collect(Collectors.toList());
+////    }
+////    System.out.println(winterSolstice);
+//
+//    termTable.addAll(nextTermTable);
+//    final LunarMonth january = termTable.stream().filter(e -> e.monthOfYear == 1).findFirst().orElse(null);
+//    final LunarMonth december = nextTermTable.stream().filter(e -> e.monthOfYear == 12).max(new Comparator<LunarMonth>() {
+//      @Override
+//      public int compare(LunarMonth o1, LunarMonth o2) {
+//        return o1.compareTo(o2);
+//      }}).orElse(null);
+//    printr(termTable.stream().filter(e -> january.range.getMinimum() <= e.range.getMinimum() && e.range.getMinimum() <= december.range.getMaximum()));
+  }
+
+  static void printr(Stream<?> stream) {
+    stream.forEach(System.out::println);
+  }
+
+  @SuppressWarnings("unchecked")
+  protected static <T> T lastOf(Collection<T> collection) {
+    return collection == null || collection.isEmpty() ? null : (T) collection.toArray()[collection.size() - 1];
+  }
+
 }

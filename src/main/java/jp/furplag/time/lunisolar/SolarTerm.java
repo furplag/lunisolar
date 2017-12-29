@@ -17,6 +17,8 @@
 package jp.furplag.time.lunisolar;
 
 import java.io.Serializable;
+import java.time.Instant;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -24,6 +26,7 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 import jp.furplag.time.Julian;
+import jp.furplag.time.lunisolar.misc.Astror;
 import jp.furplag.time.lunisolar.misc.orrery.EclipticLongitude;
 
 /**
@@ -50,14 +53,10 @@ public abstract class SolarTerm implements Comparable<SolarTerm>, Serializable {
   final int termIndex;
 
   private SolarTerm(double julianDate) {
-    this(julianDate, EclipticLongitude.Sun.ofJulian(julianDate));
-  }
-
-  private SolarTerm(double julianDate, double actualLongitude) {
     this.julianDate = julianDate;
     this.epochMilli = Julian.toInstant(julianDate).toEpochMilli();
-    this.actualLongitude = actualLongitude;
-    longitude = ((int) (actualLongitude + .5));
+    this.actualLongitude = EclipticLongitude.Sun.ofJulian(julianDate);
+    longitude = ((int) Astror.circulate(actualLongitude + .5));
     this.termIndex = ((int) ((longitude + 45.0) / 15.0)) % 24;
   }
 
@@ -109,5 +108,23 @@ public abstract class SolarTerm implements Comparable<SolarTerm>, Serializable {
   @Override
   public int compareTo(SolarTerm o) {
     return Double.compare(julianDate, o.julianDate);
+  }
+
+
+  @Override
+  public String toString() {
+    // @formatter:off
+    return
+      Instant.ofEpochMilli(epochMilli).atZone(ZoneId.systemDefault())
+      + " ( "
+      + actualLongitude
+      + " ), julianDate: "
+      + julianDate
+      + ", termIndex: "
+      + termIndex
+      + ", longitude: "
+      + longitude
+      ;
+    // @formatter:on
   }
 }

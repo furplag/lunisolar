@@ -38,22 +38,28 @@ public class StandardLunisolarTest {
     final OffsetDateTime t = Instant.parse("1844-12-01T12:00:00.000Z").atOffset(ZoneOffset.ofHours(9));
     final StandardLunisolar lunisolar = new StandardLunisolar(365.242234, 29.530588, ZoneOffset.ofHours(9));
     // @formatter:off
+
     assertThat(
       LongStream.rangeClosed(1844, 2300)
       .mapToObj(y->new LunisolarCalendar(lunisolar, Julian.ofEpochMilli(t.with(ChronoField.YEAR, y).toInstant().toEpochMilli())))
-      .filter(c->c.monthsOfYear.get(0).monthOfYear != 1 || c.monthsOfYear.get(c.monthsOfYear.size() - 1).monthOfYear != 12)
+      .filter(c->(c.monthsOfYear.get(0).monthOfYear != 1 || c.monthsOfYear.get(c.monthsOfYear.size() - 1).monthOfYear != 12))
+      .map(c->{
+        System.out.println(c);
+        return c;
+      })
       .collect(Collectors.toList())
       , is(new ArrayList<>()))
-    // @formatter:on
     ;
+
   }
 
+  @Test
   public void testOf2017() {
     final OffsetDateTime t = Instant.parse("1844-12-01T12:00:00.000Z").atOffset(ZoneOffset.ofHours(9));
     final StandardLunisolar lunisolar = new StandardLunisolar(365.242234, 29.530588, ZoneOffset.ofHours(9));
     LunisolarCalendar lunisolar2017 = new LunisolarCalendar(lunisolar, Julian.ofEpochMilli(t.with(ChronoField.YEAR, 2017).toInstant().toEpochMilli()));
     assertThat(lunisolar2017.monthsOfYear.size(), is(13));
-    assertThat(lunisolar2017.monthsOfYear.stream().filter(e->e.intercalaryInCalendar).findAny().orElse(new LunarMonth(0, 1, null)).monthOfYear, is(5));
+    assertThat(lunisolar2017.monthsOfYear.stream().filter(e->e.intercalary).findAny().orElse(new LunarMonth(0, 1, null)).monthOfYear, is(5));
     // @formatter:off
     assertThat(
       lunisolar2017.monthsOfYear.stream().filter(e -> (e.monthOfYear == 1)).findAny().orElse(new LunarMonth(0, 1, null)).range
@@ -68,10 +74,10 @@ public class StandardLunisolarTest {
       lunisolar2017.monthsOfYear.stream().filter(e -> (e.monthOfYear == 4)).findAny().orElse(new LunarMonth(0, 1, null)).range
     , is(ValueRange.of(OffsetDateTime.parse("2017-04-26T00:00:00.000+09:00").toInstant().toEpochMilli(), OffsetDateTime.parse("2017-05-25T23:59:59.999+09:00").toInstant().toEpochMilli())));
     assertThat(
-      lunisolar2017.monthsOfYear.stream().filter(e -> (e.monthOfYear == 5) && !e.intercalary).findAny().orElse(new LunarMonth(0, 1, null)).range
+      lunisolar2017.monthsOfYear.stream().filter(e -> (e.monthOfYear == 5) && !e.intercalaryable).findAny().orElse(new LunarMonth(0, 1, null)).range
     , is(ValueRange.of(OffsetDateTime.parse("2017-05-26T00:00:00.000+09:00").toInstant().toEpochMilli(), OffsetDateTime.parse("2017-06-23T23:59:59.999+09:00").toInstant().toEpochMilli())));
     assertThat(
-      lunisolar2017.monthsOfYear.stream().filter(e -> (e.monthOfYear == 5) && e.intercalary).findAny().orElse(new LunarMonth(0, 1, null)).range
+      lunisolar2017.monthsOfYear.stream().filter(e -> (e.monthOfYear == 5) && e.intercalaryable).findAny().orElse(new LunarMonth(0, 1, null)).range
     , is(ValueRange.of(OffsetDateTime.parse("2017-06-24T00:00:00.000+09:00").toInstant().toEpochMilli(), OffsetDateTime.parse("2017-07-22T23:59:59.999+09:00").toInstant().toEpochMilli())));
     assertThat(
       lunisolar2017.monthsOfYear.stream().filter(e -> (e.monthOfYear == 6)).findAny().orElse(new LunarMonth(0, 1, null)).range
@@ -97,12 +103,13 @@ public class StandardLunisolarTest {
     // @formatter:on
   }
 
+  @Test
   public void testOf2033() {
     final OffsetDateTime t = Instant.parse("1844-12-01T12:00:00.000Z").atOffset(ZoneOffset.ofHours(9));
     final StandardLunisolar lunisolar = new StandardLunisolar(365.242234, 29.530588, ZoneOffset.ofHours(9));
     LunisolarCalendar lunisolar2033 = new LunisolarCalendar(lunisolar, Julian.ofEpochMilli(t.with(ChronoField.YEAR, 2033).toInstant().toEpochMilli()));
     assertThat(lunisolar2033.monthsOfYear.size(), is(13));
-    assertThat(lunisolar2033.monthsOfYear.stream().filter(e->e.intercalaryInCalendar).findAny().orElse(new LunarMonth(0, 1, null)).monthOfYear, is(11));
+    assertThat(lunisolar2033.monthsOfYear.stream().filter(e->e.intercalary).findAny().orElse(new LunarMonth(0, 1, null)).monthOfYear, is(11));
     // @formatter:off
     assertThat(
       lunisolar2033.monthsOfYear.stream().filter(e -> (e.monthOfYear == 1)).findAny().orElse(new LunarMonth(0, 1, null)).range
@@ -127,7 +134,7 @@ public class StandardLunisolarTest {
     , is(ValueRange.of(OffsetDateTime.parse("2033-07-26T00:00:00.000+09:00").toInstant().toEpochMilli(), OffsetDateTime.parse("2033-08-24T23:59:59.999+09:00").toInstant().toEpochMilli())));
     assertThat(
       lunisolar2033.monthsOfYear.stream().filter(e -> (e.monthOfYear == 8)).findAny().orElse(new LunarMonth(0, 1, null)).range
-    , is(ValueRange.of(OffsetDateTime.parse("2033-08-25T00:00:00.000+09:00").toInstant().toEpochMilli(), OffsetDateTime.parse("2033-9-22T23:59:59.999+09:00").toInstant().toEpochMilli())));
+    , is(ValueRange.of(OffsetDateTime.parse("2033-08-25T00:00:00.000+09:00").toInstant().toEpochMilli(), OffsetDateTime.parse("2033-09-22T23:59:59.999+09:00").toInstant().toEpochMilli())));
     assertThat(
       lunisolar2033.monthsOfYear.stream().filter(e -> (e.monthOfYear == 9)).findAny().orElse(new LunarMonth(0, 1, null)).range
     , is(ValueRange.of(OffsetDateTime.parse("2033-09-23T00:00:00.000+09:00").toInstant().toEpochMilli(), OffsetDateTime.parse("2033-10-22T23:59:59.999+09:00").toInstant().toEpochMilli())));
@@ -135,14 +142,14 @@ public class StandardLunisolarTest {
       lunisolar2033.monthsOfYear.stream().filter(e -> (e.monthOfYear == 10)).findAny().orElse(new LunarMonth(0, 1, null)).range
     , is(ValueRange.of(OffsetDateTime.parse("2033-10-23T00:00:00.000+09:00").toInstant().toEpochMilli(), OffsetDateTime.parse("2033-11-21T23:59:59.999+09:00").toInstant().toEpochMilli())));
     assertThat(
-      lunisolar2033.monthsOfYear.stream().filter(e -> (e.monthOfYear == 11) && !e.intercalary).findAny().orElse(new LunarMonth(0, 1, null)).range
+      lunisolar2033.monthsOfYear.stream().filter(e -> (e.monthOfYear == 11) && !e.intercalaryable).findAny().orElse(new LunarMonth(0, 1, null)).range
     , is(ValueRange.of(OffsetDateTime.parse("2033-11-22T00:00:00.000+09:00").toInstant().toEpochMilli(), OffsetDateTime.parse("2033-12-21T23:59:59.999+09:00").toInstant().toEpochMilli())));
     assertThat(
-      lunisolar2033.monthsOfYear.stream().filter(e -> (e.monthOfYear == 11) && e.intercalary).findAny().orElse(new LunarMonth(0, 1, null)).range
+      lunisolar2033.monthsOfYear.stream().filter(e -> (e.monthOfYear == 11) && e.intercalaryable).findAny().orElse(new LunarMonth(0, 1, null)).range
     , is(ValueRange.of(OffsetDateTime.parse("2033-12-22T00:00:00.000+09:00").toInstant().toEpochMilli(), OffsetDateTime.parse("2034-01-19T23:59:59.999+09:00").toInstant().toEpochMilli())));
     assertThat(
       lunisolar2033.monthsOfYear.stream().filter(e -> (e.monthOfYear == 12)).findAny().orElse(new LunarMonth(0, 1, null)).range
-    , is(ValueRange.of(OffsetDateTime.parse("2034-01-19T00:00:00.000+09:00").toInstant().toEpochMilli(), OffsetDateTime.parse("2034-02-18T23:59:59.999+09:00").toInstant().toEpochMilli())));
+    , is(ValueRange.of(OffsetDateTime.parse("2034-01-20T00:00:00.000+09:00").toInstant().toEpochMilli(), OffsetDateTime.parse("2034-02-18T23:59:59.999+09:00").toInstant().toEpochMilli())));
     // @formatter:on
   }
 

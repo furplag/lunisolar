@@ -33,6 +33,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import jp.furplag.time.Julian;
+import jp.furplag.time.Millis;
 import jp.furplag.time.lunisolar.misc.Astror;
 import jp.furplag.time.lunisolar.misc.orrery.EclipticLongitude;
 
@@ -54,6 +55,8 @@ import jp.furplag.time.lunisolar.misc.orrery.EclipticLongitude;
  */
 public abstract class Lunisolar {
 
+  static final Lunisolar Kyoho = new StandardLunisolar(365.242234, 29.530588, ZoneOffset.ofHours(9));
+
   static final double precision = 5E-10;
 
   static final int loopLimit = 100;
@@ -63,6 +66,10 @@ public abstract class Lunisolar {
   final double daysOfMonth;
 
   final ZoneOffset zoneOffset;
+
+  public static Lunisolar ofJulian(final double julianDate) {
+    return Kyoho;
+  }
 
   Lunisolar(double daysOfYear, double daysOfMonth, ZoneOffset zoneOffset) {
     this.daysOfYear = daysOfYear;
@@ -124,32 +131,64 @@ public abstract class Lunisolar {
    * @return
    */
   protected double firstDayOfYear(double julianDate) {
-    double springEquinox = closestTerm(Julian.ofEpochMilli(atOffset(Julian.toInstant(julianDate)).with(ChronoField.MONTH_OF_YEAR, 4).toInstant().toEpochMilli()), 0);
-    double midClimateOfFirst = closestTerm(springEquinox, 330);
-    double temporalFirst = latestNewMoon(midClimateOfFirst);
-    double temporalNext = latestNewMoon(plusMonth(temporalFirst, 1.1));
-    long dayOfMidClimateOfFirst = asStartOfDay(midClimateOfFirst);
-    long dayOfTemporalFirst = asStartOfDay(temporalFirst);
-    long dayOfTemporalNext = asStartOfDay(temporalNext);
+    final double springEquinox = Julian.ofEpochMilli(asStartOfDay(springEquinox(julianDate)));
+    System.out.println("春分:" + atOffset(Julian.toInstant(springEquinox)));
+    final double lastWinterSolstice = Julian.ofEpochMilli(asStartOfDay(winterSolstice(plusMonth(springEquinox, -4))));
+    System.out.println("冬至:" + atOffset(Julian.toInstant(lastWinterSolstice)));
+    double firstDayOfLastNovember = Julian.ofEpochMilli(asStartOfDay(latestNewMoon(lastWinterSolstice + 1)));
+    if (lastWinterSolstice == firstDayOfLastNovember) {
+      System.out.println(">>>");
+      //      firstDayOfLastNovember = Julian.ofEpochMilli(asStartOfDay(latestNewMoon(lastWinterSolstice)));
+    }
+    System.out.println("11月:" + atOffset(Julian.toInstant(firstDayOfLastNovember)));
+    double firstDayOfFebruary = Julian.ofEpochMilli(asStartOfDay(latestNewMoon(springEquinox + 1)));
+//    if (springEquinox == firstDayOfFebruary) {
+//      firstDayOfFebruary = Julian.ofEpochMilli(asStartOfDay(latestNewMoon(springEquinox)));
+//    }
+    System.out.println(" 2月:" + atOffset(Julian.toInstant(firstDayOfFebruary)));
+    final double temporalA = Julian.ofEpochMilli(asStartOfDay(latestNewMoon(plusMonth(lastWinterSolstice, 2))));
+    final double temporalB = Julian.ofEpochMilli(asStartOfDay(latestNewMoon(firstDayOfFebruary)));
+    if (temporalA == temporalB) {
+      return temporalA;
+    }
+    System.out.println("   A:" + atOffset(Julian.toInstant(temporalA)));
+    System.out.println("   B:" + atOffset(Julian.toInstant(temporalB)));
+    System.out.println(atOffset(Julian.toInstant(SolarTerm.ofClosest(firstDayOfFebruary, 300, this).julianDate)));
+    System.out.println(atOffset(Julian.toInstant(SolarTerm.ofClosest(firstDayOfFebruary, 330, this).julianDate)));
+    System.out.println(lastWinterSolstice - firstDayOfLastNovember);
+    if ((long) (lastWinterSolstice - firstDayOfLastNovember) > 28) {
+      return temporalA;
+    }
+    long days = (long) (lastWinterSolstice - firstDayOfLastNovember);
+    System.out.println("nov :" + days);
 
-    // @formatter:off
-    return
-      dayOfTemporalFirst < dayOfMidClimateOfFirst ?
-        (dayOfMidClimateOfFirst < dayOfTemporalNext ? temporalFirst : temporalNext) :
-      dayOfTemporalFirst > dayOfMidClimateOfFirst ? latestNewMoon(plusMonth(temporalFirst, -.1)) :
-        temporalFirst < midClimateOfFirst ? temporalFirst :
-      temporalNext;
-    // @formatter:on
+    final double firstDayOfJanuary = Julian.ofEpochMilli(asStartOfDay(latestNewMoon(firstDayOfFebruary)));
+    final double firstDayOfLastDecember = Julian.ofEpochMilli(asStartOfDay(latestNewMoon(firstDayOfJanuary)));
+    System.out.println("12月:" + atOffset(Julian.toInstant(firstDayOfLastDecember)));
+    System.out.println(" 1月:" + atOffset(Julian.toInstant(firstDayOfJanuary)));
+
+    return temporalA < temporalB ? temporalB : temporalA;
   }
 
+  public static void main(String[] args) {
+    OffsetDateTime t = OffsetDateTime.parse("2001-01-01T00:00+09:00");
+    IntStream.of(2034)
+      .mapToObj(t::withYear)
+      .map(OffsetDateTime::toInstant)
+      .mapToLong(Instant::toEpochMilli)
+      .mapToDouble(Julian::ofEpochMilli)
+      .map(Kyoho::firstDayOfYear)
+      .mapToObj(Julian::toInstant)
+      .map(Kyoho::atOffset)
+      .forEach(System.out::println);
+  }
   /**
    *
    *
    * @param solarTerms {@link SolarTerm} of the year
-   * @param rangeOfYear the days of year
    * @return
    */
-  abstract List<Long> firstDaysOfYear(List<SolarTerm> solarTerms, ValueRange rangeOfYear);
+  abstract List<Double> termsToFirstDays(List<SolarTerm> solarTerms);
 
   /**
    * returns the list of {@link SolarTerm} between a winter solstice of the year that contains specified instant and last year's one .
@@ -232,9 +271,9 @@ public abstract class Lunisolar {
    */
   protected ValueRange rangeOfYear(double julianDate) {
     final double firstDayOfYear = firstDayOfYear(julianDate);
-    double firstDayOfNextYear = firstDayOfYear(plusMonth(firstDayOfYear, 16));
+    final double firstDayOfNextYear = firstDayOfYear(Julian.ofEpochMilli(atOffset(Julian.toInstant(julianDate)).plusYears(1).toInstant().toEpochMilli()));
 
-    return ValueRange.of(asStartOfDay(firstDayOfYear), asStartOfDay(firstDayOfNextYear) - 1L);
+    return ValueRange.of(Millis.ofJulian(firstDayOfYear), Millis.ofJulian(firstDayOfNextYear) - 1L);
   }
 
   /**
@@ -245,5 +284,13 @@ public abstract class Lunisolar {
    */
   protected double synodicMonth(double julianDate) {
     return ((julianDate - Julian.j2000) * Julian.incrementOfSynodicMonth) + daysOfMonth;
+  }
+
+  protected double springEquinox(final double julianDate) {
+    return closestTerm(Julian.ofEpochMilli(atOffset(Julian.toInstant(julianDate)).with(ChronoField.MONTH_OF_YEAR, 4).toInstant().toEpochMilli()), 0);
+  }
+
+  protected double winterSolstice(final double julianDate) {
+    return closestTerm(Julian.ofEpochMilli(atOffset(Julian.toInstant(julianDate)).with(ChronoField.MONTH_OF_YEAR, 12).toInstant().toEpochMilli()), 270);
   }
 }
