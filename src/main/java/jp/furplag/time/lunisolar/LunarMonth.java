@@ -28,6 +28,10 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 import jp.furplag.time.Millis;
 import jp.furplag.time.lunisolar.SolarTerm.MidClimate;
@@ -65,27 +69,31 @@ public final class LunarMonth implements Comparable<LunarMonth>, Serializable {
       }};
   }
 
-  static List<LunarMonth> constructs(final List<SolarTerm> solarTerms, final List<Long> firstDays) {
-    final List<Long> _firstDays = Optional.ofNullable(firstDays).orElse(new ArrayList<>());
+  @Nonnull
+  static List<LunarMonth> constructs(final @Nonnull List<SolarTerm> solarTerms, final @Nonnull List<Long> firstDays) {
     // @formatter:off
-    return monthOfYear(intercalaryze(IntStream.range(_firstDays.isEmpty() ? 0 : 1, _firstDays.size())
+    return monthOfYear(intercalaryze(IntStream.range(firstDays.isEmpty() ? 0 : 1, firstDays.size())
       .mapToObj(index -> new LunarMonth(firstDays.get(index - 1), firstDays.get(index) - 1, solarTerms))
       .collect(Collectors.toList())));
     // @formatter:on
   }
 
-  private static List<LunarMonth> intercalaryze(final List<LunarMonth> lunarMonths) {
-    List<LunarMonth> _lunarMonths = Optional.ofNullable(lunarMonths).orElse(new ArrayList<>());
-    final LunarMonth firstOfWinterSolstices = _lunarMonths.stream().filter(LunarMonth::isNovember).sorted(comparator()).findFirst().orElse(null);
-    final LunarMonth secondOfWinterSolstices = _lunarMonths.stream().filter(LunarMonth::isNovember).filter(e -> firstOfWinterSolstices.range.getMinimum() < e.range.getMinimum()).sorted(comparator()).findFirst().orElse(null);
-    materialize(_lunarMonths.stream().filter(e -> firstOfWinterSolstices.range.getMinimum() <= e.range.getMinimum() && e.range.getMinimum() < secondOfWinterSolstices.range.getMinimum()).sorted(comparator()).collect(Collectors.toList()));
-    final LunarMonth thirdOfWinterSolstices = _lunarMonths.stream().filter(LunarMonth::isNovember).filter(e -> secondOfWinterSolstices.range.getMinimum() < e.range.getMinimum()).sorted(comparator()).findFirst().orElse(null);
-    materialize(_lunarMonths.stream().filter(e -> secondOfWinterSolstices.range.getMinimum() <= e.range.getMinimum() && e.range.getMinimum() < thirdOfWinterSolstices.range.getMinimum()).sorted(comparator()).collect(Collectors.toList()));
+  @Nonnull
+  private static List<LunarMonth> intercalaryze(final @Nonnull List<LunarMonth> lunarMonths) {
+    final LunarMonth firstOfWinterSolstices = firstNovember(lunarMonths.stream(), null);
+    final LunarMonth secondOfWinterSolstices = firstNovember(lunarMonths.stream(), firstOfWinterSolstices);
+    final LunarMonth thirdOfWinterSolstices = firstNovember(lunarMonths.stream(), secondOfWinterSolstices);
+    materialize(lunarMonths, firstOfWinterSolstices.range.getMinimum(), secondOfWinterSolstices.range.getMinimum());
+    materialize(lunarMonths, secondOfWinterSolstices.range.getMinimum(), thirdOfWinterSolstices.range.getMinimum());
 
-    return _lunarMonths;
+    return lunarMonths;
   }
 
-  private static void materialize(final List<LunarMonth> monthsOfWinterSolstice) {
+  private static void materialize(final @Nonnull List<LunarMonth> lunarMonths, final long minimum, final long maximum) {
+    materialize(lunarMonths.stream().filter(e -> minimum <= e.range.getMinimum() && e.range.getMinimum() < maximum).sorted(comparator()).collect(Collectors.toList()));
+  }
+
+  private static void materialize(final @Nonnull List<LunarMonth> monthsOfWinterSolstice) {
     final boolean hasIntercalary = monthsOfWinterSolstice.size() > 12;
     monthsOfWinterSolstice.stream().filter(e -> hasIntercalary && e.intercalaryable).findFirst().ifPresent(e -> e.intercalary = true);
     final int[] monthOfYear = {10};
@@ -121,6 +129,11 @@ public final class LunarMonth implements Comparable<LunarMonth>, Serializable {
 
   public boolean isNovember() {
     return november;
+  }
+
+  @Nullable
+  private static LunarMonth firstNovember(final @Nonnull Stream<LunarMonth> lunarMonths, final LunarMonth start) {
+    return lunarMonths.filter(LunarMonth::isNovember).filter(e -> (start == null ? Long.MIN_VALUE : start.range.getMinimum()) < e.range.getMinimum()).sorted().findFirst().orElse(null);
   }
 
   @Override

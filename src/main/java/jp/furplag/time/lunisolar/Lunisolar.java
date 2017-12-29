@@ -33,7 +33,6 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import jp.furplag.time.Julian;
-import jp.furplag.time.Millis;
 import jp.furplag.time.lunisolar.misc.Astror;
 import jp.furplag.time.lunisolar.misc.orrery.EclipticLongitude;
 
@@ -127,64 +126,6 @@ public abstract class Lunisolar {
   /**
    *
    *
-   * @param julianDate an instant represented by astronomical julian date
-   * @return
-   */
-  protected double firstDayOfYear(double julianDate) {
-    final double springEquinox = Julian.ofEpochMilli(asStartOfDay(springEquinox(julianDate)));
-    System.out.println("春分:" + atOffset(Julian.toInstant(springEquinox)));
-    final double lastWinterSolstice = Julian.ofEpochMilli(asStartOfDay(winterSolstice(plusMonth(springEquinox, -4))));
-    System.out.println("冬至:" + atOffset(Julian.toInstant(lastWinterSolstice)));
-    double firstDayOfLastNovember = Julian.ofEpochMilli(asStartOfDay(latestNewMoon(lastWinterSolstice + 1)));
-    if (lastWinterSolstice == firstDayOfLastNovember) {
-      System.out.println(">>>");
-      //      firstDayOfLastNovember = Julian.ofEpochMilli(asStartOfDay(latestNewMoon(lastWinterSolstice)));
-    }
-    System.out.println("11月:" + atOffset(Julian.toInstant(firstDayOfLastNovember)));
-    double firstDayOfFebruary = Julian.ofEpochMilli(asStartOfDay(latestNewMoon(springEquinox + 1)));
-//    if (springEquinox == firstDayOfFebruary) {
-//      firstDayOfFebruary = Julian.ofEpochMilli(asStartOfDay(latestNewMoon(springEquinox)));
-//    }
-    System.out.println(" 2月:" + atOffset(Julian.toInstant(firstDayOfFebruary)));
-    final double temporalA = Julian.ofEpochMilli(asStartOfDay(latestNewMoon(plusMonth(lastWinterSolstice, 2))));
-    final double temporalB = Julian.ofEpochMilli(asStartOfDay(latestNewMoon(firstDayOfFebruary)));
-    if (temporalA == temporalB) {
-      return temporalA;
-    }
-    System.out.println("   A:" + atOffset(Julian.toInstant(temporalA)));
-    System.out.println("   B:" + atOffset(Julian.toInstant(temporalB)));
-    System.out.println(atOffset(Julian.toInstant(SolarTerm.ofClosest(firstDayOfFebruary, 300, this).julianDate)));
-    System.out.println(atOffset(Julian.toInstant(SolarTerm.ofClosest(firstDayOfFebruary, 330, this).julianDate)));
-    System.out.println(lastWinterSolstice - firstDayOfLastNovember);
-    if ((long) (lastWinterSolstice - firstDayOfLastNovember) > 28) {
-      return temporalA;
-    }
-    long days = (long) (lastWinterSolstice - firstDayOfLastNovember);
-    System.out.println("nov :" + days);
-
-    final double firstDayOfJanuary = Julian.ofEpochMilli(asStartOfDay(latestNewMoon(firstDayOfFebruary)));
-    final double firstDayOfLastDecember = Julian.ofEpochMilli(asStartOfDay(latestNewMoon(firstDayOfJanuary)));
-    System.out.println("12月:" + atOffset(Julian.toInstant(firstDayOfLastDecember)));
-    System.out.println(" 1月:" + atOffset(Julian.toInstant(firstDayOfJanuary)));
-
-    return temporalA < temporalB ? temporalB : temporalA;
-  }
-
-  public static void main(String[] args) {
-    OffsetDateTime t = OffsetDateTime.parse("2001-01-01T00:00+09:00");
-    IntStream.of(2034)
-      .mapToObj(t::withYear)
-      .map(OffsetDateTime::toInstant)
-      .mapToLong(Instant::toEpochMilli)
-      .mapToDouble(Julian::ofEpochMilli)
-      .map(Kyoho::firstDayOfYear)
-      .mapToObj(Julian::toInstant)
-      .map(Kyoho::atOffset)
-      .forEach(System.out::println);
-  }
-  /**
-   *
-   *
    * @param solarTerms {@link SolarTerm} of the year
    * @return
    */
@@ -261,19 +202,6 @@ public abstract class Lunisolar {
    */
   protected double plusMonth(double julianDate, double amount) {
     return julianDate + (synodicMonth(julianDate) * amount);
-  }
-
-  /**
-   * returns the {@link ValueRange} represented by the days of year that contains specified instant.
-   *
-   * @param julianDate an instant represented by astronomical julian date
-   * @return {@link ValueRange}
-   */
-  protected ValueRange rangeOfYear(double julianDate) {
-    final double firstDayOfYear = firstDayOfYear(julianDate);
-    final double firstDayOfNextYear = firstDayOfYear(Julian.ofEpochMilli(atOffset(Julian.toInstant(julianDate)).plusYears(1).toInstant().toEpochMilli()));
-
-    return ValueRange.of(Millis.ofJulian(firstDayOfYear), Millis.ofJulian(firstDayOfNextYear) - 1L);
   }
 
   /**

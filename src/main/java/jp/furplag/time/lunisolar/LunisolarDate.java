@@ -17,8 +17,6 @@ package jp.furplag.time.lunisolar;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.time.OffsetDateTime;
-import java.time.ZoneId;
 
 import jp.furplag.time.Julian;
 import jp.furplag.time.JulianDayNumber;
@@ -60,7 +58,6 @@ public class LunisolarDate {
     epochMilli = Millis.ofJulian(julianDate);
     Lunisolar lunisolar = Lunisolar.ofJulian(julianDate);
     LunisolarCalendar lunisolarCalendar = new LunisolarCalendar(lunisolar, julianDate);
-    System.out.println(lunisolarCalendar.monthsOfYear.size());
     if (!lunisolarCalendar.rangeOfYear.isValidValue(lunisolar.asStartOfDay(julianDate))) {
       lunisolarCalendar = new LunisolarCalendar(lunisolar, lunisolar.plusMonth(julianDate, -2.1));
     }
@@ -73,16 +70,6 @@ public class LunisolarDate {
     yearOfEra = (int) year;
     heavenlyStem = 0;
     earthlyBranch = 0;
-
-    lunisolarCalendar.monthsOfYear.stream().forEach(e -> {
-      System.out.print(Millis.toInstant(e.range.getMinimum()).atZone(ZoneId.systemDefault()));
-      System.out.print(" - ");
-      System.out.print(Millis.toInstant(e.range.getMaximum()).atZone(ZoneId.systemDefault()));
-      System.out.print(" : ");
-      System.out.print(Millis.toInstant(epochMilli).atZone(ZoneId.systemDefault()));
-      System.out.print(" ? ");
-      System.out.println(e.range.isValidValue(lunisolar.asStartOfDay(julianDate)));
-    });
   }
 
   @Override
@@ -94,10 +81,5 @@ public class LunisolarDate {
       .append(dayOfMonth).append("日")
       .toString()
       ;
-  }
-
-  public static void main(String[] args) {
-    System.out.println(LunisolarDate.ofEpochMilli(OffsetDateTime.parse("2033-12-01T00:00+09:00").toInstant().toEpochMilli()).toString());
-    System.out.println(new LunisolarCalendar(Lunisolar.ofJulian(Julian.ofEpochMilli(OffsetDateTime.parse("2033-12-01T00:00+09:00").toInstant().toEpochMilli())), Julian.ofEpochMilli(OffsetDateTime.parse("2033-12-01T00:00+09:00").toInstant().toEpochMilli())).monthsOfYear.size());
   }
 }
