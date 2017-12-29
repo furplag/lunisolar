@@ -22,10 +22,9 @@ import java.time.Instant;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.ValueRange;
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Optional;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -105,11 +104,11 @@ public final class LunarMonth implements Comparable<LunarMonth>, Serializable {
     });
   }
 
-  private static List<LunarMonth> monthOfYear(final List<LunarMonth> lunarMonths) {
-    final LunarMonth january = lunarMonths.stream().filter(e -> e.monthOfYear == 1).findFirst().orElse(null);
-    final LunarMonth december = lunarMonths.stream().filter(e -> e.monthOfYear == 12).max(comparator()).orElse(null);
+  private static List<LunarMonth> monthOfYear(final @Nonnull List<LunarMonth> lunarMonths) {
+    final LunarMonth january = Objects.requireNonNull(firstOf(lunarMonths, 1));
+    final LunarMonth december = Objects.requireNonNull(firstOf(lunarMonths, 12));
 
-    return Optional.ofNullable(lunarMonths).orElse(new ArrayList<>()).stream()
+    return lunarMonths.stream()
       .filter(e -> january.range.getMinimum() <= e.range.getMinimum() && e.range.getMinimum() <= december.range.getMaximum())
       .collect(Collectors.toList());
   }
@@ -134,6 +133,15 @@ public final class LunarMonth implements Comparable<LunarMonth>, Serializable {
   @Nullable
   private static LunarMonth firstNovember(final @Nonnull Stream<LunarMonth> lunarMonths, final LunarMonth start) {
     return lunarMonths.filter(LunarMonth::isNovember).filter(e -> (start == null ? Long.MIN_VALUE : start.range.getMinimum()) < e.range.getMinimum()).sorted().findFirst().orElse(null);
+  }
+
+  @Nullable
+  private static LunarMonth firstOf(final @Nonnull List<LunarMonth> lunarMonths, final int monthOfYear) {
+    return lunarMonths.stream().filter(e -> e.monthOfYear == normalize(monthOfYear, 12)).findFirst().orElse(null);
+  }
+
+  private static int normalize(final int monthOfYear, final int normalizr) {
+    return (monthOfYear % normalizr == 0 ? normalizr : monthOfYear % normalizr);
   }
 
   @Override
