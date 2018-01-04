@@ -26,8 +26,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-
-import javax.annotation.Nonnull;
+import java.util.Optional;
 
 import jp.furplag.time.Julian;
 import jp.furplag.time.lunisolar.misc.Astror;
@@ -86,9 +85,9 @@ public abstract class Lunisolar {
    * @param _default a fallback
    * @return the result
    */
-  static double doOurOwnBest(final @Nonnull Map<Double, Double> results, final double _default) {
+  static double doOurOwnBest(final Map<Double, Double> results, final double _default) {
     // @formatter:off
-    return results.entrySet().stream()
+    return Optional.ofNullable(results).orElse(new HashMap<>()).entrySet().stream()
       .sorted(comparator).mapToDouble(Map.Entry::getValue).findFirst().orElse(_default);
     // @formatter:on
   }

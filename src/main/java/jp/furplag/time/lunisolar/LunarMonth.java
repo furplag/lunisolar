@@ -62,6 +62,14 @@ public final class LunarMonth implements Comparable<LunarMonth>, Serializable {
     november = midClimates.stream().anyMatch(t -> t.longitude == 270);
     intercalaryable = midClimates.isEmpty();
   }
+//
+//  public static final Comparator<LunarMonth> comparator() {
+//    return new Comparator<LunarMonth>() {
+//      @Override
+//      public int compare(LunarMonth o1, LunarMonth o2) {
+//        return o1.compareTo(o2);
+//      }};
+//  }
 
   @Nonnull
   static List<LunarMonth> constructs(final @Nonnull List<SolarTerm> solarTerms, final @Nonnull List<Long> firstDays) {
