@@ -18,7 +18,6 @@ package jp.furplag.time.lunisolar;
 
 import java.io.Serializable;
 import java.time.temporal.ValueRange;
-import java.util.Comparator;
 import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -31,7 +30,6 @@ import javax.annotation.Nullable;
 import com.fasterxml.jackson.core.JsonProcessingException;
 
 import jp.furplag.data.json.Jsonifier;
-import jp.furplag.time.Millis;
 import jp.furplag.time.lunisolar.SolarTerm.MidClimate;
 import jp.furplag.time.lunisolar.SolarTerm.PreClimate;
 
@@ -53,19 +51,19 @@ public final class LunarMonth implements Comparable<LunarMonth>, Serializable {
 
   LunarMonth(long fromEpochMilli, long toEpochMilli, List<SolarTerm> solarTerms) {
     range = ValueRange.of(fromEpochMilli, toEpochMilli);
-    preClimates = PreClimate.stream(solarTerms).filter(t->range.isValidValue(Millis.ofJulian(t.julianDate))).collect(Collectors.toList());
-    midClimates = MidClimate.stream(solarTerms).filter(t->range.isValidValue(Millis.ofJulian(t.julianDate))).collect(Collectors.toList());
+    preClimates = PreClimate.stream(solarTerms).filter(t->range.isValidValue(t.epochMilli)).collect(Collectors.toList());
+    midClimates = MidClimate.stream(solarTerms).filter(t->range.isValidValue(t.epochMilli)).collect(Collectors.toList());
     november = midClimates.stream().anyMatch(t -> t.longitude == 270);
     intercalaryable = midClimates.isEmpty();
   }
-
-  public static final Comparator<LunarMonth> comparator() {
-    return new Comparator<LunarMonth>() {
-      @Override
-      public int compare(LunarMonth o1, LunarMonth o2) {
-        return o1.compareTo(o2);
-      }};
-  }
+//
+//  public static final Comparator<LunarMonth> comparator() {
+//    return new Comparator<LunarMonth>() {
+//      @Override
+//      public int compare(LunarMonth o1, LunarMonth o2) {
+//        return o1.compareTo(o2);
+//      }};
+//  }
 
   @Nonnull
   static List<LunarMonth> constructs(final @Nonnull List<SolarTerm> solarTerms, final @Nonnull List<Long> firstDays) {
@@ -87,7 +85,7 @@ public final class LunarMonth implements Comparable<LunarMonth>, Serializable {
   }
 
   private static void materialize(final @Nonnull List<LunarMonth> lunarMonths, final long minimum, final long maximum) {
-    materialize(lunarMonths.stream().filter(e -> minimum <= e.range.getMinimum() && e.range.getMinimum() < maximum).sorted(comparator()).collect(Collectors.toList()));
+    materialize(lunarMonths.stream().filter(e -> minimum <= e.range.getMinimum() && e.range.getMinimum() < maximum).sorted().collect(Collectors.toList()));
   }
 
   private static void materialize(final @Nonnull List<LunarMonth> monthsOfWinterSolstice) {
