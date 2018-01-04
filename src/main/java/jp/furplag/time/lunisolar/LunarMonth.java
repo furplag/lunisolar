@@ -70,7 +70,7 @@ public final class LunarMonth implements Comparable<LunarMonth>, Serializable {
   @Nonnull
   static List<LunarMonth> constructs(final @Nonnull List<SolarTerm> solarTerms, final @Nonnull List<Long> firstDays) {
     // @formatter:off
-    return monthOfYear(intercalaryze(IntStream.range(firstDays.isEmpty() ? 0 : 1, firstDays.size())
+    return monthOfYear(intercalaryze(IntStream.range(0, firstDays.size())
       .mapToObj(index -> new LunarMonth(firstDays.get(index - 1), firstDays.get(index) - 1, solarTerms))
       .collect(Collectors.toList())));
     // @formatter:on
@@ -105,8 +105,7 @@ public final class LunarMonth implements Comparable<LunarMonth>, Serializable {
   @Nonnull
   private static List<LunarMonth> monthOfYear(final @Nonnull List<LunarMonth> lunarMonths) {
     final LunarMonth january = firstOf(lunarMonths, 1);
-    final LunarMonth december = firstOf(filtered(lunarMonths.stream(), e -> january.range.getMinimum() < e.range.getMinimum()), 12);
-    final ValueRange range = ValueRange.of(january.range.getMinimum(), december.range.getMinimum());
+    final ValueRange range = ValueRange.of(january.range.getMinimum(), firstOf(filtered(lunarMonths.stream(), e -> january.range.getMinimum() < e.range.getMinimum()), 12).range.getMinimum());
 
     return filtered(lunarMonths.stream(), e -> range.isValidValue(e.range.getMinimum()));
   }
