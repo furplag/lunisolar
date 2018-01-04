@@ -20,7 +20,6 @@ import java.io.Serializable;
 import java.time.temporal.ValueRange;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Objects;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -81,9 +80,8 @@ public final class LunarMonth implements Comparable<LunarMonth>, Serializable {
   private static List<LunarMonth> intercalaryze(final @Nonnull List<LunarMonth> lunarMonths) {
     final LunarMonth firstOfWinterSolstices = firstNovember(lunarMonths.stream(), null);
     final LunarMonth secondOfWinterSolstices = firstNovember(lunarMonths.stream(), firstOfWinterSolstices);
-    final LunarMonth thirdOfWinterSolstices = firstNovember(lunarMonths.stream(), secondOfWinterSolstices);
     materialize(lunarMonths, firstOfWinterSolstices.range.getMinimum(), secondOfWinterSolstices.range.getMinimum());
-    materialize(lunarMonths, secondOfWinterSolstices.range.getMinimum(), thirdOfWinterSolstices.range.getMinimum());
+    materialize(lunarMonths, secondOfWinterSolstices.range.getMinimum(), firstNovember(lunarMonths.stream(), secondOfWinterSolstices).range.getMinimum());
 
     return lunarMonths;
   }
@@ -106,11 +104,11 @@ public final class LunarMonth implements Comparable<LunarMonth>, Serializable {
 
   @Nonnull
   private static List<LunarMonth> monthOfYear(final @Nonnull List<LunarMonth> lunarMonths) {
-    final LunarMonth january = Objects.requireNonNull(firstOf(lunarMonths, 1));
-    final LunarMonth december = Objects.requireNonNull(firstOf(filtered(lunarMonths.stream(), e -> january.range.getMinimum() < e.range.getMinimum()), 12));
+    final LunarMonth january = firstOf(lunarMonths, 1);
+    final LunarMonth december = firstOf(filtered(lunarMonths.stream(), e -> january.range.getMinimum() < e.range.getMinimum()), 12);
     final ValueRange range = ValueRange.of(january.range.getMinimum(), december.range.getMinimum());
 
-    return filtered(lunarMonths.stream(), (e) -> range.isValidValue(e.range.getMinimum()));
+    return filtered(lunarMonths.stream(), e -> range.isValidValue(e.range.getMinimum()));
   }
 
   @Override
