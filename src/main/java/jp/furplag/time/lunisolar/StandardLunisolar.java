@@ -87,7 +87,7 @@ public final class StandardLunisolar extends Lunisolar {
     do {
       final SolarTerm solarTerm = lastOf(solarTerms);
       solarTerms.add(SolarTerm.ofClosest(solarTerm.julianDate, solarTerm.longitude + 15, this));
-    } while (solarTerms.stream().filter(e -> e.longitude == 270).count() != 3);
+    } while (solarTerms.stream().filter(e -> e.longitude == 315).count() != 3);
 
     return solarTerms;
   }
