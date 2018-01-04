@@ -26,7 +26,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Optional;
+
+import javax.annotation.Nonnull;
 
 import jp.furplag.time.Julian;
 import jp.furplag.time.lunisolar.misc.Astror;
@@ -56,6 +57,12 @@ public abstract class Lunisolar {
 
   static final int loopLimit = 100;
 
+  static final Comparator<Map.Entry<Double, Double>> comparator = new Comparator<Map.Entry<Double, Double>>() {
+    @Override public int compare(Entry<Double, Double> o1, Entry<Double, Double> o2) {
+      return o1.getKey().compareTo(o2.getKey());
+    }
+  };
+
   final double daysOfYear;
 
   final double daysOfMonth;
@@ -79,14 +86,10 @@ public abstract class Lunisolar {
    * @param _default a fallback
    * @return the result
    */
-  static double doOurOwnBest(final Map<Double, Double> results, final double _default) {
+  static double doOurOwnBest(final @Nonnull Map<Double, Double> results, final double _default) {
     // @formatter:off
-    return Optional.ofNullable(results).orElse(new HashMap<>()).entrySet().stream()
-      .sorted(new Comparator<Map.Entry<Double, Double>>() {
-        @Override public int compare(Entry<Double, Double> o1, Entry<Double, Double> o2) {
-          return o1.getKey().compareTo(o2.getKey());
-        }
-      }).mapToDouble(Map.Entry::getValue).findFirst().orElse(_default);
+    return results.entrySet().stream()
+      .sorted(comparator).mapToDouble(Map.Entry::getValue).findFirst().orElse(_default);
     // @formatter:on
   }
 
