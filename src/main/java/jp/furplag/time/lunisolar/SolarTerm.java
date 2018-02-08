@@ -23,7 +23,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-import jp.furplag.data.json.Jsonifier;
 import jp.furplag.time.Julian;
 import jp.furplag.time.lunisolar.misc.Astror;
 import jp.furplag.time.lunisolar.misc.orrery.EclipticLongitude;
@@ -107,13 +106,5 @@ public abstract class SolarTerm implements Comparable<SolarTerm>, Serializable {
   @Override
   public int compareTo(SolarTerm o) {
     return Double.compare(julianDate, o.julianDate);
-  }
-
-  /**
-   * {@inheritDoc}
-   */
-  @Override
-  public String toString() {
-    return Jsonifier.serializeLazy(this);
   }
 }
