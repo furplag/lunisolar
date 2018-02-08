@@ -17,14 +17,13 @@
 package jp.furplag.time.lunisolar;
 
 import java.io.Serializable;
-import java.time.Instant;
-import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+import jp.furplag.data.json.Jsonifier;
 import jp.furplag.time.Julian;
 import jp.furplag.time.lunisolar.misc.Astror;
 import jp.furplag.time.lunisolar.misc.orrery.EclipticLongitude;
@@ -110,21 +109,11 @@ public abstract class SolarTerm implements Comparable<SolarTerm>, Serializable {
     return Double.compare(julianDate, o.julianDate);
   }
 
-
+  /**
+   * {@inheritDoc}
+   */
   @Override
   public String toString() {
-    // @formatter:off
-    return
-      Instant.ofEpochMilli(epochMilli).atZone(ZoneId.systemDefault())
-      + " ( "
-      + actualLongitude
-      + " ), julianDate: "
-      + julianDate
-      + ", termIndex: "
-      + termIndex
-      + ", longitude: "
-      + longitude
-      ;
-    // @formatter:on
+    return Jsonifier.serializeLazy(this);
   }
 }

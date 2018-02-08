@@ -111,7 +111,7 @@ public class Precession {
    *
    * @param alpha longitude
    * @param delta latitude
-   * @param f
+   * @param f formula(s)
    * @return result
    */
   private double rOf(double alpha, double delta, double... f) {

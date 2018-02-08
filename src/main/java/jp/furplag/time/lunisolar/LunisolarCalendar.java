@@ -27,6 +27,12 @@ import javax.annotation.Nonnull;
 
 import jp.furplag.time.Millis;
 
+/**
+ * east asian Lunisolar calendar system .
+ *
+ * @author furplag
+ *
+ */
 public final class LunisolarCalendar {
 
   final Lunisolar lunisolar;
@@ -42,6 +48,9 @@ public final class LunisolarCalendar {
     rangeOfYear = ValueRange.of(monthsOfYear.get(0).range.getMinimum(), monthsOfYear.get(monthsOfYear.size() - 1).range.getMaximum());
   }
 
+  /**
+   * {@inheritDoc}
+   */
   @Override
   public String toString() {
     return new StringBuilder()

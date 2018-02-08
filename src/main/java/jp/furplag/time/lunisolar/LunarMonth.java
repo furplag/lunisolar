@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package jp.furplag.time.lunisolar;
 
 import java.io.Serializable;
@@ -28,7 +27,6 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.core.JsonProcessingException;
 
 import jp.furplag.data.json.Jsonifier;
 import jp.furplag.time.lunisolar.SolarTerm.MidClimate;
@@ -57,19 +55,11 @@ public final class LunarMonth implements Comparable<LunarMonth>, Serializable {
 
   LunarMonth(long fromEpochMilli, long toEpochMilli, List<SolarTerm> solarTerms) {
     range = ValueRange.of(fromEpochMilli, toEpochMilli);
-    preClimates = PreClimate.stream(solarTerms).filter(t->range.isValidValue(t.epochMilli)).collect(Collectors.toList());
-    midClimates = MidClimate.stream(solarTerms).filter(t->range.isValidValue(t.epochMilli)).collect(Collectors.toList());
+    preClimates = PreClimate.stream(solarTerms).filter(t -> range.isValidValue(t.epochMilli)).collect(Collectors.toList());
+    midClimates = MidClimate.stream(solarTerms).filter(t -> range.isValidValue(t.epochMilli)).collect(Collectors.toList());
     november = midClimates.stream().anyMatch(t -> t.longitude == 270);
     intercalaryable = midClimates.isEmpty();
   }
-//
-//  public static final Comparator<LunarMonth> comparator() {
-//    return new Comparator<LunarMonth>() {
-//      @Override
-//      public int compare(LunarMonth o1, LunarMonth o2) {
-//        return o1.compareTo(o2);
-//      }};
-//  }
 
   @Nonnull
   static List<LunarMonth> constructs(final @Nonnull List<SolarTerm> solarTerms, final @Nonnull List<Long> firstDays) {
@@ -100,9 +90,7 @@ public final class LunarMonth implements Comparable<LunarMonth>, Serializable {
     final int[] monthOfYear = {10};
     monthsOfWinterSolstice.forEach(e -> {
       monthOfYear[0] += e.intercalary ? 0 : 1;
-      if (e.monthOfYear == 0) {
-        e.monthOfYear = normalize(monthOfYear[0], 12);
-      }
+      e.monthOfYear = normalize(monthOfYear[0], 12);
     });
   }
 
@@ -139,9 +127,6 @@ public final class LunarMonth implements Comparable<LunarMonth>, Serializable {
 
   @Override
   public String toString() {
-    // @formatter:off
-    try {return Jsonifier.serialize(this);} catch (JsonProcessingException e) {}
-    // @formatter:on
-    return null;
+    return Jsonifier.serializeLazy(this);
   }
 }

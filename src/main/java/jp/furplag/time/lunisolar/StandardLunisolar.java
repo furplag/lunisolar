@@ -18,7 +18,6 @@ package jp.furplag.time.lunisolar;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -29,6 +28,12 @@ import javax.annotation.Nonnull;
 import jp.furplag.time.lunisolar.misc.Astror;
 import jp.furplag.time.lunisolar.misc.orrery.EclipticLongitude;
 
+/**
+ * current Lunisolar calendar system .
+ *
+ * @author furplag
+ *
+ */
 public final class StandardLunisolar extends Lunisolar {
 
   StandardLunisolar(double daysOfYear, double daysOfMonth, ZoneOffset zoneOffset) {
@@ -81,16 +86,10 @@ public final class StandardLunisolar extends Lunisolar {
   List<SolarTerm> termsOfBase(double julianDate) {
     List<SolarTerm> solarTerms = new ArrayList<>(Arrays.asList(SolarTerm.ofClosest(plusMonth(winterSolstice(julianDate), -13), 255, this)));
     do {
-      final SolarTerm solarTerm = lastOf(solarTerms);
+      final SolarTerm solarTerm = solarTerms.get(solarTerms.size() - 1);
       solarTerms.add(SolarTerm.ofClosest(solarTerm.julianDate, solarTerm.longitude + 15, this));
     } while (solarTerms.stream().filter(e -> e.longitude == 315).count() != 3);
 
     return solarTerms;
   }
-
-  @SuppressWarnings("unchecked")
-  protected static <T> T lastOf(Collection<T> collection) {
-    return collection == null || collection.isEmpty() ? null : (T) collection.toArray()[collection.size() - 1];
-  }
-
 }

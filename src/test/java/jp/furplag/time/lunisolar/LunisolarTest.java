@@ -27,9 +27,11 @@ import java.time.temporal.ValueRange;
 import java.util.HashMap;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.LongStream;
 
 import org.junit.Test;
 
+import jp.furplag.reflect.SavageReflection;
 import jp.furplag.time.Julian;
 
 public class LunisolarTest {
@@ -93,13 +95,10 @@ public class LunisolarTest {
   @Test
   public void testOf2033() {
     final OffsetDateTime t = Instant.parse("1844-12-01T12:00:00.000Z").atOffset(ZoneOffset.ofHours(9));
-    final StandardLunisolar lunisolar = new StandardLunisolar(365.242234, 29.530588, ZoneOffset.ofHours(9));
-    Lunisolar luni = Lunisolar.ofJulian(Julian.ofEpochMilli(t.with(ChronoField.YEAR, 2033).toInstant().toEpochMilli()));
-    LunisolarCalendar lunisolar2033 = new LunisolarCalendar(lunisolar, Julian.ofEpochMilli(t.with(ChronoField.YEAR, 2033).toInstant().toEpochMilli()));
-    LunisolarCalendar lunisolar2033_ = new LunisolarCalendar(Lunisolar.ofJulian(Julian.ofEpochMilli(t.with(ChronoField.YEAR, 2033).toInstant().toEpochMilli())), Julian.ofEpochMilli(t.with(ChronoField.YEAR, 2033).toInstant().toEpochMilli()));
+    final LunisolarCalendar lunisolar2033 = new LunisolarCalendar(Lunisolar.ofJulian(Julian.ofEpochMilli(t.with(ChronoField.YEAR, 2033).toInstant().toEpochMilli())), Julian.ofEpochMilli(t.with(ChronoField.YEAR, 2033).toInstant().toEpochMilli()));
     assertThat(lunisolar2033.monthsOfYear.size(), is(13));
     assertThat(lunisolar2033.monthsOfYear.stream().filter(e->e.intercalary).findAny().orElse(new LunarMonth(0, 1, null)).monthOfYear, is(11));
-    // @formatter:off
+    // @formatter:off800
     assertThat(
       lunisolar2033.monthsOfYear.stream().filter(e -> (e.monthOfYear == 1)).findAny().orElse(new LunarMonth(0, 1, null)).range
     , is(ValueRange.of(OffsetDateTime.parse("2033-01-31T00:00:00.000+09:00").toInstant().toEpochMilli(), OffsetDateTime.parse("2033-02-28T23:59:59.999+09:00").toInstant().toEpochMilli())));
@@ -139,6 +138,44 @@ public class LunisolarTest {
     assertThat(
       lunisolar2033.monthsOfYear.stream().filter(e -> (e.monthOfYear == 12)).findAny().orElse(new LunarMonth(0, 1, null)).range
     , is(ValueRange.of(OffsetDateTime.parse("2034-01-20T00:00:00.000+09:00").toInstant().toEpochMilli(), OffsetDateTime.parse("2034-02-18T23:59:59.999+09:00").toInstant().toEpochMilli())));
+    // @formatter:on
+  }
+
+  @Test
+  public void paintItGreen() throws ReflectiveOperationException {
+    Lunisolar lunisolar = new StandardLunisolar(365.242234, 29.530588, ZoneOffset.ofHours(9));
+    final double precision = (double) SavageReflection.get(lunisolar, "precision");
+    final int loopLimit = (int) SavageReflection.get(lunisolar, "loopLimit");
+
+    SavageReflection.set(lunisolar, "precision", 1E-20);
+    lunisolar.latestNewMoon(Julian.ofEpochMilli(Instant.parse("2034-01-20T00:00:00.000Z").toEpochMilli()));
+    lunisolar.closestTerm(Julian.ofEpochMilli(Instant.parse("2034-01-20T00:00:00.000Z").toEpochMilli()), 270);
+
+    SavageReflection.set(lunisolar, "loopLimit", 10);
+    lunisolar.latestNewMoon(Julian.ofEpochMilli(Instant.parse("2034-01-20T00:00:00.000Z").toEpochMilli()));
+    lunisolar.closestTerm(Julian.ofEpochMilli(Instant.parse("2034-01-20T00:00:00.000Z").toEpochMilli()), 270);
+
+    SavageReflection.set(lunisolar, "precision", precision);
+    lunisolar.latestNewMoon(Julian.ofEpochMilli(Instant.parse("2034-01-20T00:00:00.000Z").toEpochMilli()));
+    lunisolar.closestTerm(Julian.ofEpochMilli(Instant.parse("2034-01-20T00:00:00.000Z").toEpochMilli()), 270);
+
+    SavageReflection.set(lunisolar, "loopLimit", loopLimit);
+    lunisolar.latestNewMoon(Julian.ofEpochMilli(Instant.parse("2034-01-20T00:00:00.000Z").toEpochMilli()));
+    lunisolar.closestTerm(Julian.ofEpochMilli(Instant.parse("2034-01-20T00:00:00.000Z").toEpochMilli()), 270);
+
+    OffsetDateTime offsetDateTime = Instant.parse("2033-01-01T00:00:00.000Z").atOffset(lunisolar.zoneOffset);
+    // @formatter:off
+    LongStream.rangeClosed(0, 400)
+      .mapToObj(d -> offsetDateTime.plusDays(d).toInstant().toEpochMilli())
+      .mapToDouble(Julian::ofEpochMilli)
+      .forEach(j -> {
+        lunisolar.closestTerm(j, 359.99);
+        lunisolar.springEquinox(j);
+        lunisolar.closestTerm(j, 90);
+        lunisolar.closestTerm(j, 180);
+        lunisolar.winterSolstice(j);
+        lunisolar.closestTerm(j, 0.01);
+      });
     // @formatter:on
   }
 }

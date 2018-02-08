@@ -21,11 +21,9 @@ import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.time.temporal.ChronoField;
 import java.time.temporal.ChronoUnit;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import jp.furplag.time.Julian;
 import jp.furplag.time.lunisolar.misc.Astror;
@@ -51,30 +49,29 @@ public abstract class Lunisolar {
 
   static final Lunisolar Kyoho = new StandardLunisolar(365.242234, 29.530588, ZoneOffset.ofHours(9));
 
-  static final double precision = 5E-10;
-
-  static final int loopLimit = 100;
-
-  static final Comparator<Map.Entry<Double, Double>> comparator = new Comparator<Map.Entry<Double, Double>>() {
-    @Override public int compare(Entry<Double, Double> o1, Entry<Double, Double> o2) {
-      return o1.getKey().compareTo(o2.getKey());
-    }
-  };
-
   final double daysOfYear;
 
   final double daysOfMonth;
 
   final ZoneOffset zoneOffset;
 
+  final double precision;
+
+  final int loopLimit;
+
   public static Lunisolar ofJulian(final double julianDate) {
     return Kyoho;
   }
-
   Lunisolar(double daysOfYear, double daysOfMonth, ZoneOffset zoneOffset) {
+    this(daysOfYear, daysOfMonth, zoneOffset, 5E-10, 100);
+  }
+
+  private Lunisolar(double daysOfYear, double daysOfMonth, ZoneOffset zoneOffset, double precision, int loopLimit) {
     this.daysOfYear = daysOfYear;
     this.daysOfMonth = daysOfMonth;
     this.zoneOffset = zoneOffset;
+    this.precision = precision;
+    this.loopLimit = loopLimit;
   }
 
   /**
@@ -121,10 +118,10 @@ public abstract class Lunisolar {
   abstract double closestTerm(double julianDate, double degree);
 
   /**
-   *
+   * calculate the first day of the month(s) .
    *
    * @param solarTerms {@link SolarTerm} of the year
-   * @return
+   * @return the first days represented by epoch millis
    */
   abstract List<Long> termsToFirstDays(List<SolarTerm> solarTerms);
 
@@ -191,10 +188,22 @@ public abstract class Lunisolar {
     return ((julianDate - Julian.j2000) * Julian.incrementOfSynodicMonth) + daysOfMonth;
   }
 
+  /**
+   * calculate an instant which closest spring equinox .
+   *
+   * @param julianDate an instant represented by astronomical julian date
+   * @return {@link SolarTerm} of spring equinox
+   */
   protected double springEquinox(final double julianDate) {
     return closestTerm(Julian.ofEpochMilli(atOffset(Julian.toInstant(julianDate)).with(ChronoField.MONTH_OF_YEAR, 4).toInstant().toEpochMilli()), 0);
   }
 
+  /**
+   * calculate an instant which closest winter solstice .
+   *
+   * @param julianDate an instant represented by astronomical julian date
+   * @return {@link SolarTerm} of winter solstice
+   */
   protected double winterSolstice(final double julianDate) {
     return closestTerm(Julian.ofEpochMilli(atOffset(Julian.toInstant(julianDate)).with(ChronoField.MONTH_OF_YEAR, 12).toInstant().toEpochMilli()), 270);
   }

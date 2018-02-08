@@ -29,7 +29,7 @@ import jp.furplag.time.lunisolar.misc.orrery.delta.DeltaT;
  * @author furplag
  *
  */
-public class Astror {
+public final class Astror {
 
   /**
    * normalize the degree to range of 0&deg; - 360&deg; .
