@@ -47,7 +47,20 @@ import jp.furplag.time.lunisolar.misc.orrery.EclipticLongitude;
  */
 public abstract class Lunisolar {
 
-  static final Lunisolar Kyoho = new StandardLunisolar(365.242234, 29.530588, ZoneOffset.ofHours(9));
+  /** meant &quot;享保暦&quot; . */
+  static final Lunisolar Kyoho;
+
+  /** a precision for calculates . */
+  static final double precision;
+
+  /** limitation of calculates . */
+  static final int loopLimit;
+
+  static {
+    Kyoho = new StandardLunisolar(365.242234, 29.530588, ZoneOffset.ofHours(9));
+    precision = 5E-10;
+    loopLimit = 100;
+  }
 
   final double daysOfYear;
 
@@ -55,23 +68,14 @@ public abstract class Lunisolar {
 
   final ZoneOffset zoneOffset;
 
-  final double precision;
-
-  final int loopLimit;
-
   public static Lunisolar ofJulian(final double julianDate) {
     return Kyoho;
   }
-  Lunisolar(double daysOfYear, double daysOfMonth, ZoneOffset zoneOffset) {
-    this(daysOfYear, daysOfMonth, zoneOffset, 5E-10, 100);
-  }
 
-  private Lunisolar(double daysOfYear, double daysOfMonth, ZoneOffset zoneOffset, double precision, int loopLimit) {
+  Lunisolar(double daysOfYear, double daysOfMonth, ZoneOffset zoneOffset) {
     this.daysOfYear = daysOfYear;
     this.daysOfMonth = daysOfMonth;
     this.zoneOffset = zoneOffset;
-    this.precision = precision;
-    this.loopLimit = loopLimit;
   }
 
   /**
