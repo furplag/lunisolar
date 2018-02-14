@@ -88,6 +88,15 @@
       </snapshots>
     </repository>
 
+    <repository>
+      <id>jp.furplag.sandbox.streamr</id>
+      <url>https://raw.github.com/furplag/streamr/mvn-repo/</url>
+      <snapshots>
+        <enabled>true</enabled>
+        <updatePolicy>always</updatePolicy>
+      </snapshots>
+    </repository>
+
   </repositories>
 
   <dependencies>
@@ -102,7 +111,7 @@
     <dependency>
       <groupId>jp.furplag.sandbox</groupId>
       <artifactId>savage-reflections</artifactId>
-      <version>2.1.0</version>
+      <version>2.1.1</version>
       <scope>test</scope>
     </dependency>
 
@@ -123,6 +132,12 @@
       <groupId>jp.furplag.sandbox</groupId>
       <artifactId>jsonifier</artifactId>
       <version>2.1.0</version>
+    </dependency>
+
+    <dependency>
+      <groupId>jp.furplag.sandbox</groupId>
+      <artifactId>streamr</artifactId>
+      <version>1.0.0</version>
     </dependency>
 
   </dependencies>
