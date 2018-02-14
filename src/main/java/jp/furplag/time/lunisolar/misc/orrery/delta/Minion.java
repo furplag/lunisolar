@@ -17,7 +17,6 @@
 package jp.furplag.time.lunisolar.misc.orrery.delta;
 
 import java.time.temporal.ValueRange;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Objects;
@@ -25,7 +24,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import jp.furplag.stream.Streamr;
+import jp.furplag.time.lunisolar.misc.Ranges;
 
 /**
  * Finding values for Delta T, the difference between Terrestrial Time (TT) and Universal Time (UT1).
@@ -113,8 +112,7 @@ abstract class Minion {
    * @return {@link Minion}
    */
   static Minion of(final double decimalYear) {
-    return Streamr.filtered(minions, minion -> minion.range.isValidValue(((long) (Math.floor(decimalYear)))), ArrayList::new).stream().findFirst().orElse(origin);
-//    return minions.stream().filter(minion -> Ranges.contains(minion.range, ((long) (Math.floor(decimalYear))))).findFirst().orElse(origin);
+    return minions.stream().filter(minion -> Ranges.contains(minion.range, ((long) (Math.floor(decimalYear))))).findFirst().orElse(origin);
   }
 
   /**

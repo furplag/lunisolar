@@ -17,6 +17,7 @@ package jp.furplag.time.lunisolar;
 
 import java.io.Serializable;
 import java.time.temporal.ValueRange;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -29,38 +30,59 @@ import javax.annotation.Nullable;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import jp.furplag.data.json.Jsonifier;
+import jp.furplag.stream.Streamr;
 import jp.furplag.time.lunisolar.SolarTerm.MidClimate;
 import jp.furplag.time.lunisolar.SolarTerm.PreClimate;
 
+/**
+ * the month of year represented by lunar month .
+ *
+ * @author furplag
+ *
+ */
 public final class LunarMonth implements Comparable<LunarMonth>, Serializable {
 
+  /** {@link ValueRange} of the month . */
   @JsonProperty
   final ValueRange range;
 
+  /** meant &quot;節&quot; of {@link SolarTerm} . */
   @JsonProperty
   final List<SolarTerm> preClimates;
 
+  /** meant &quot;中気&quot; of {@link SolarTerm} . */
   @JsonProperty
   final List<SolarTerm> midClimates;
 
+  /** true if that does not have any mid climate . */
   final boolean intercalaryable;
 
+  /** meant &quot;閏月&quot; of lunar month . */
   @JsonProperty
   boolean intercalary;
 
+  /** true if that month contains an instant of winter solstice . */
   final boolean november;
 
+  /** number of the month . */
   @JsonProperty
   int monthOfYear;
 
   LunarMonth(long fromEpochMilli, long toEpochMilli, List<SolarTerm> solarTerms) {
     range = ValueRange.of(fromEpochMilli, toEpochMilli);
-    preClimates = PreClimate.stream(solarTerms).filter(t -> range.isValidValue(t.epochMilli)).collect(Collectors.toList());
-    midClimates = MidClimate.stream(solarTerms).filter(t -> range.isValidValue(t.epochMilli)).collect(Collectors.toList());
+    preClimates = Streamr.filtered(solarTerms, ((Predicate<SolarTerm>) t -> t instanceof PreClimate).and(t -> range.isValidValue(t.epochMilli)), ArrayList::new);
+    midClimates = Streamr.filtered(solarTerms, ((Predicate<SolarTerm>) t -> t instanceof MidClimate).and(t -> range.isValidValue(t.epochMilli)), ArrayList::new);
     november = midClimates.stream().anyMatch(t -> t.longitude == 270);
     intercalaryable = midClimates.isEmpty();
   }
 
+  /**
+   *
+   *
+   * @param solarTerms
+   * @param firstDays
+   * @return
+   */
   @Nonnull
   static List<LunarMonth> constructs(final @Nonnull List<SolarTerm> solarTerms, final @Nonnull List<Long> firstDays) {
     // @formatter:off
@@ -97,9 +119,9 @@ public final class LunarMonth implements Comparable<LunarMonth>, Serializable {
   @Nonnull
   private static List<LunarMonth> monthOfYear(final @Nonnull List<LunarMonth> lunarMonths) {
     final LunarMonth january = firstOf(lunarMonths, 1);
-    final ValueRange range = ValueRange.of(january.range.getMinimum(), firstOf(filtered(lunarMonths.stream(), e -> january.range.getMinimum() < e.range.getMinimum()), 12).range.getMinimum());
+    final ValueRange range = ValueRange.of(january.range.getMinimum(), firstOf(Streamr.filtered(lunarMonths, e -> january.range.getMinimum() < e.range.getMinimum(), ArrayList::new), 12).range.getMinimum());
 
-    return filtered(lunarMonths.stream(), e -> range.isValidValue(e.range.getMinimum()));
+    return Streamr.filtered(lunarMonths, e -> range.isValidValue(e.range.getMinimum()), ArrayList::new);
   }
 
   @Override
@@ -114,15 +136,11 @@ public final class LunarMonth implements Comparable<LunarMonth>, Serializable {
 
   @Nullable
   private static LunarMonth firstOf(final @Nonnull List<LunarMonth> lunarMonths, final int monthOfYear) {
-    return lunarMonths.stream().filter(e -> e.monthOfYear == normalize(monthOfYear, 12)).findFirst().orElse(null);
+    return Streamr.filtered(lunarMonths, e -> e.monthOfYear == normalize(monthOfYear, 12), ArrayList::new).stream().findFirst().orElse(null);
   }
 
   private static int normalize(final int monthOfYear, final int normalizr) {
     return (monthOfYear % normalizr == 0 ? normalizr : monthOfYear % normalizr);
-  }
-
-  private static List<LunarMonth> filtered(final @Nonnull Stream<LunarMonth> stream, Predicate<LunarMonth> predicate) {
-    return stream.filter(predicate).collect(Collectors.toList());
   }
 
   @Override
