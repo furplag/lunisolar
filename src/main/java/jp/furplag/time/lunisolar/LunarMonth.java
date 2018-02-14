@@ -19,7 +19,6 @@ import java.io.Serializable;
 import java.time.temporal.ValueRange;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -70,8 +69,8 @@ public final class LunarMonth implements Comparable<LunarMonth>, Serializable {
 
   LunarMonth(long fromEpochMilli, long toEpochMilli, List<SolarTerm> solarTerms) {
     range = ValueRange.of(fromEpochMilli, toEpochMilli);
-    preClimates = Streamr.filtered(solarTerms, ((Predicate<SolarTerm>) t -> t instanceof PreClimate).and(t -> range.isValidValue(t.epochMilli)), ArrayList::new);
-    midClimates = Streamr.filtered(solarTerms, ((Predicate<SolarTerm>) t -> t instanceof MidClimate).and(t -> range.isValidValue(t.epochMilli)), ArrayList::new);
+    preClimates = PreClimate.stream(solarTerms).filter(t -> range.isValidValue(t.epochMilli)).collect(Collectors.toList());
+    midClimates = MidClimate.stream(solarTerms).filter(t -> range.isValidValue(t.epochMilli)).collect(Collectors.toList());
     november = midClimates.stream().anyMatch(t -> t.longitude == 270);
     intercalaryable = midClimates.isEmpty();
   }
