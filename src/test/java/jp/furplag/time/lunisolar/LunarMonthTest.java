@@ -37,6 +37,11 @@ public class LunarMonthTest {
           return o1.compareTo(o2);
         }}).orElse(new LunarMonth(10, 11, null)).toString()
     , is(new LunarMonth(0, 1, null).toString()));
+    assertThat(
+      LongStream.of(0, 1, 2, 3)
+      .mapToObj(l -> new LunarMonth(l, l + 1L, null))
+      .sorted().findFirst().orElse(new LunarMonth(10, 11, null)).toString()
+    , is(new LunarMonth(0, 1, null).toString()));
 
     assertThat(
       LongStream.of(0, 1, 2, 3)
