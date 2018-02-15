@@ -20,6 +20,7 @@ import java.time.temporal.ValueRange;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -120,10 +121,10 @@ public final class LunarMonth implements Comparable<LunarMonth>, Serializable {
 
   @Nonnull
   private static List<LunarMonth> monthOfYear(final @Nonnull List<LunarMonth> lunarMonths) {
-    final LunarMonth january = Streamr.of(lunarMonths).filter(e -> e.monthOfYear == 1).filtering().first(Comparator.naturalOrder());
-    final LunarMonth december = Streamr.of(lunarMonths).filter(e -> (january.range.getMinimum() < e.range.getMinimum()), e -> (e.monthOfYear == 12)).filtering().first(Comparator.naturalOrder());
+    final LunarMonth january = firstOf(lunarMonths, e -> e.monthOfYear == 1);
+    ValueRange r = ValueRange.of(january.range.getMinimum(), firstOf(lunarMonths, e -> january.range.getMinimum() < e.range.getMinimum(), e -> e.monthOfYear == 12).range.getMinimum());
 
-    return Streamr.of(lunarMonths).filter(e -> ValueRange.of(january.range.getMinimum(), december.range.getMinimum()).isValidValue(e.range.getMinimum())).filtering().toCollection(ArrayList::new);
+    return Streamr.of(lunarMonths).filter(e -> r.isValidValue(e.range.getMinimum())).filtering().toCollection(ArrayList::new);
   }
 
   @Override
@@ -136,11 +137,13 @@ public final class LunarMonth implements Comparable<LunarMonth>, Serializable {
     return lunarMonths.filter(e -> e.november && (start == null || start.range.getMinimum() < e.range.getMinimum())).sorted().findFirst().orElse(null);
   }
 
+  @SafeVarargs
+  private static LunarMonth firstOf(final List<LunarMonth> lunarMonths, final Predicate<LunarMonth>... operators) {
+    return Streamr.of(lunarMonths).filter(operators).filtering().first(Comparator.naturalOrder());
+  }
+
   /*
   @Nullable
-  private static LunarMonth firstOf(final @Nonnull List<LunarMonth> lunarMonths, final int monthOfYear) {
-    return Streamr.filtered(lunarMonths, e -> e.monthOfYear == (monthOfYear % 12 == 0 ? 12 : monthOfYear % 12), ArrayList::new).stream().findFirst().orElse(null);
-  }
 
   private static int normalize(final int monthOfYear, final int normalizr) {
     return (monthOfYear % normalizr == 0 ? normalizr : monthOfYear % normalizr);
