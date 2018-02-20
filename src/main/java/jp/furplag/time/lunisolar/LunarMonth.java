@@ -17,10 +17,8 @@ package jp.furplag.time.lunisolar;
 
 import java.io.Serializable;
 import java.time.temporal.ValueRange;
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -31,9 +29,9 @@ import javax.annotation.Nullable;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import jp.furplag.data.json.Jsonifier;
+import jp.furplag.stream.streamr.Streamizr;
 import jp.furplag.time.lunisolar.SolarTerm.MidClimate;
 import jp.furplag.time.lunisolar.SolarTerm.PreClimate;
-import jp.furplag.time.lunisolar.misc.Streamr;
 
 /**
  * the month of year represented by lunar month .
@@ -66,13 +64,13 @@ public final class LunarMonth implements Comparable<LunarMonth>, Serializable {
   final boolean november;
 
   /** number of the month . */
-  @JsonProperty
+  @JsonProperty(index = 0)
   int monthOfYear;
 
   LunarMonth(long fromEpochMilli, long toEpochMilli, List<SolarTerm> solarTerms) {
     range = ValueRange.of(fromEpochMilli, toEpochMilli);
-    preClimates = PreClimate.stream(solarTerms).filter(t -> range.isValidValue(t.epochMilli)).collect(Collectors.toList());
-    midClimates = MidClimate.stream(solarTerms).filter(t -> range.isValidValue(t.epochMilli)).collect(Collectors.toList());
+    preClimates = Streamizr.of(solarTerms).filter(t -> t instanceof PreClimate, t -> range.isValidValue(t.epochMilli)).filtering().list();
+    midClimates = Streamizr.of(solarTerms).filter(t -> t instanceof MidClimate, t -> range.isValidValue(t.epochMilli)).filtering().list();
     november = midClimates.stream().anyMatch(t -> t.longitude == 270);
     intercalaryable = midClimates.isEmpty();
   }
@@ -95,16 +93,16 @@ public final class LunarMonth implements Comparable<LunarMonth>, Serializable {
 
   @Nonnull
   private static List<LunarMonth> intercalaryze(final @Nonnull List<LunarMonth> lunarMonths) {
-    final LunarMonth firstOfWinterSolstices = firstNovember(lunarMonths.stream(), null);
-    final LunarMonth secondOfWinterSolstices = firstNovember(lunarMonths.stream(), firstOfWinterSolstices);
-    materialize(lunarMonths, firstOfWinterSolstices.range.getMinimum(), secondOfWinterSolstices.range.getMinimum());
-    materialize(lunarMonths, secondOfWinterSolstices.range.getMinimum(), firstNovember(lunarMonths.stream(), secondOfWinterSolstices).range.getMinimum());
+    List<LunarMonth> novembers = Streamizr.of(lunarMonths).filter(t -> t.november).filtering().list();
+    for (int index = 1; index < novembers.size(); index++) {
+      materialize(lunarMonths, novembers.get(index - 1), novembers.get(index));
+    }
 
     return lunarMonths;
   }
 
-  private static void materialize(final @Nonnull List<LunarMonth> lunarMonths, final long minimum, final long maximum) {
-    materialize(lunarMonths.stream().filter(e -> minimum <= e.range.getMinimum() && e.range.getMinimum() < maximum).sorted().collect(Collectors.toList()));
+  private static void materialize(final @Nonnull List<LunarMonth> lunarMonths, final LunarMonth minimum, final LunarMonth maximum) {
+    materialize(lunarMonths.stream().filter(e -> minimum.compareTo(e) < 1 && maximum.compareTo(e) > 0).sorted().collect(Collectors.toList()));
   }
 
   private static void materialize(final @Nonnull List<LunarMonth> monthsOfWinterSolstice) {
@@ -114,17 +112,15 @@ public final class LunarMonth implements Comparable<LunarMonth>, Serializable {
     monthsOfWinterSolstice.forEach(e -> {
       monthOfYear[0] += e.intercalary ? 0 : 1;
       e.monthOfYear = (monthOfYear[0] % 12 == 0 ? 12 : monthOfYear[0] % 12);
-//      System.out.println(e.monthOfYear);
     });
-//    System.out.println(monthsOfWinterSolstice.get(0).monthOfYear);
   }
 
   @Nonnull
   private static List<LunarMonth> monthOfYear(final @Nonnull List<LunarMonth> lunarMonths) {
-    final LunarMonth january = firstOf(lunarMonths, e -> e.monthOfYear == 1);
-    ValueRange r = ValueRange.of(january.range.getMinimum(), firstOf(lunarMonths, e -> january.range.getMinimum() < e.range.getMinimum(), e -> e.monthOfYear == 12).range.getMinimum());
+    final LunarMonth january = Streamizr.of(lunarMonths).filter(e -> e.monthOfYear == 1).filtering().first(Comparator.naturalOrder(), null);
+    ValueRange r = ValueRange.of(january.range.getMinimum(), Streamizr.of(lunarMonths).filter(e -> e.monthOfYear == 12, e -> january.compareTo(e) < 0).filtering().first(Comparator.naturalOrder(), january).range.getMinimum());
 
-    return Streamr.of(lunarMonths).filter(e -> r.isValidValue(e.range.getMinimum())).filtering().toCollection(ArrayList::new);
+    return Streamizr.of(lunarMonths).filter(e -> r.isValidValue(e.range.getMinimum())).filtering().list();
   }
 
   @Override
@@ -137,18 +133,6 @@ public final class LunarMonth implements Comparable<LunarMonth>, Serializable {
     return lunarMonths.filter(e -> e.november && (start == null || start.range.getMinimum() < e.range.getMinimum())).sorted().findFirst().orElse(null);
   }
 
-  @SafeVarargs
-  private static LunarMonth firstOf(final List<LunarMonth> lunarMonths, final Predicate<LunarMonth>... operators) {
-    return Streamr.of(lunarMonths).filter(operators).filtering().first(Comparator.naturalOrder());
-  }
-
-  /*
-  @Nullable
-
-  private static int normalize(final int monthOfYear, final int normalizr) {
-    return (monthOfYear % normalizr == 0 ? normalizr : monthOfYear % normalizr);
-  }
-*/
   @Override
   public String toString() {
     return Jsonifier.serializeLazy(this);
