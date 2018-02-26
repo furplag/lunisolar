@@ -17,11 +17,7 @@
 package jp.furplag.time.lunisolar;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
-import java.util.stream.Stream;
 
 import jp.furplag.time.Julian;
 import jp.furplag.time.lunisolar.misc.Astror;
@@ -62,24 +58,12 @@ public abstract class SolarTerm implements Comparable<SolarTerm>, Serializable {
     MidClimate(double julianDate) {
       super(julianDate);
     }
-
-    static Stream<SolarTerm> stream(final List<SolarTerm> solarTerms) {
-      return SolarTerm.stream(solarTerms).filter(solarTerm -> solarTerm instanceof MidClimate);
-    }
   }
 
   static final class PreClimate extends SolarTerm {
     PreClimate(double julianDate) {
       super(julianDate);
     }
-
-    static Stream<SolarTerm> stream(final List<SolarTerm> solarTerms) {
-      return SolarTerm.stream(solarTerms).filter(solarTerm -> solarTerm instanceof PreClimate);
-    }
-  }
-
-  static Stream<SolarTerm> stream(final List<SolarTerm> solarTerms) {
-    return Optional.ofNullable(solarTerms).orElse(new ArrayList<>()).stream();
   }
 
   /**
