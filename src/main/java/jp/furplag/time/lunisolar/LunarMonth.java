@@ -93,7 +93,8 @@ public final class LunarMonth implements Comparable<LunarMonth>, Serializable {
   @Nonnull
   static List<LunarMonth> constructs(final @Nonnull List<SolarTerm> solarTerms, final @Nonnull List<Long> firstDays) {
     // @formatter:off
-    return monthOfYear(intercalaryze(IntStream.range(1, firstDays.size())
+    return monthOfYear(
+      intercalaryze(IntStream.range(1, firstDays.size())
       .mapToObj(index -> new LunarMonth(firstDays.get(index - 1), firstDays.get(index) - 1, solarTerms))
       .collect(Collectors.toList())));
     // @formatter:on
