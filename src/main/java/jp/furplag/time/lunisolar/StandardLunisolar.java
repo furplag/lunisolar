@@ -17,7 +17,6 @@ package jp.furplag.time.lunisolar;
 
 import java.time.ZoneOffset;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -84,7 +83,8 @@ public final class StandardLunisolar extends Lunisolar {
 
   @Override
   List<SolarTerm> termsOfBase(double julianDate) {
-    List<SolarTerm> solarTerms = new ArrayList<>(Arrays.asList(SolarTerm.ofClosest(plusMonth(winterSolstice(julianDate), -13), 255, this)));
+    final List<SolarTerm> solarTerms = new ArrayList<>();
+    solarTerms.add(SolarTerm.ofClosest(plusMonth(winterSolstice(julianDate), -13), 255, this));
     do {
       final SolarTerm solarTerm = solarTerms.get(solarTerms.size() - 1);
       solarTerms.add(SolarTerm.ofClosest(solarTerm.julianDate, solarTerm.longitude + 15, this));
