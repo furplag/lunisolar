@@ -19,9 +19,9 @@ package jp.furplag.time.lunisolar;
 import java.io.Serializable;
 import java.util.Objects;
 
+import jp.furplag.misc.Astror;
+import jp.furplag.misc.orrery.EclipticLongitude;
 import jp.furplag.time.Julian;
-import jp.furplag.time.lunisolar.misc.Astror;
-import jp.furplag.time.lunisolar.misc.orrery.EclipticLongitude;
 
 /**
  * solar term in east asian calendar .

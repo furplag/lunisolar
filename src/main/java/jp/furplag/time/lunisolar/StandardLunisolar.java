@@ -24,8 +24,8 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nonnull;
 
-import jp.furplag.time.lunisolar.misc.Astror;
-import jp.furplag.time.lunisolar.misc.orrery.EclipticLongitude;
+import jp.furplag.misc.Astror;
+import jp.furplag.misc.orrery.EclipticLongitude;
 
 /**
  * current Lunisolar calendar system .

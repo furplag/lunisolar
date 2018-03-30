@@ -97,6 +97,15 @@
       </snapshots>
     </repository>
 
+    <repository>
+      <id>jp.furplag.sandbox.orrery</id>
+      <url>https://raw.github.com/furplag/orrery/mvn-repo/</url>
+      <snapshots>
+        <enabled>true</enabled>
+        <updatePolicy>always</updatePolicy>
+      </snapshots>
+    </repository>
+
   </repositories>
 
   <dependencies>
@@ -138,6 +147,12 @@
       <groupId>jp.furplag.sandbox</groupId>
       <artifactId>streamr</artifactId>
       <version>2.1.0-SNAPSHOT</version>
+    </dependency>
+
+    <dependency>
+      <groupId>jp.furplag.sandbox</groupId>
+      <artifactId>orrery</artifactId>
+      <version>1.0.0-SNAPSHOT</version>
     </dependency>
 
   </dependencies>
