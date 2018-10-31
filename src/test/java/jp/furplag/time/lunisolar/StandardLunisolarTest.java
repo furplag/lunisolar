@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package jp.furplag.time.lunisolar;
 
 import static org.hamcrest.CoreMatchers.*;
@@ -153,4 +154,18 @@ public class StandardLunisolarTest {
     // @formatter:on
   }
 
+  @Test
+  public void paintItGreen() {
+    try {
+      Lunisolar.Tenpo.termsToFirstDays(null);
+      fail("must raise NPE .");
+    } catch (Exception ex) {
+      assertThat(ex instanceof NullPointerException, is(true));
+    }
+
+    new StandardLunisolar(Lunisolar.Tenpo.daysOfYear, Lunisolar.Tenpo.daysOfMonth, Lunisolar.Tenpo.zoneOffset, 1E-20, Lunisolar.loopLimitDefault)
+      .closestTerm(0, 270);
+    new StandardLunisolar(Lunisolar.Tenpo.daysOfYear, Lunisolar.Tenpo.daysOfMonth, Lunisolar.Tenpo.zoneOffset, Lunisolar.precisionDefault, 1)
+      .closestTerm(0, 270);
+  }
 }

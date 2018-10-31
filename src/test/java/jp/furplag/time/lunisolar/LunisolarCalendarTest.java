@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package jp.furplag.time.lunisolar;
 
 import static org.hamcrest.CoreMatchers.*;
@@ -31,7 +32,7 @@ public class LunisolarCalendarTest {
     String expect = new StringBuilder("2033-01-31T00:00+09:00")
     .append(" - ")
     .append("2034-02-18T23:59:59.999+09:00")
-    .append(" ( 383 days ) ")
+    .append(" ( 383 days )")
     .append("\n\t")
     .append("{\"range\":{\"largestMinimum\":1990710000000,\"smallestMaximum\":1993215599999,\"fixed\":true,\"intValue\":false,\"minimum\":1990710000000,\"maximum\":1993215599999},\"preClimates\":[{}],\"midClimates\":[{}],\"intercalary\":false,\"monthOfYear\":1}")
     .append("\n\t")
@@ -60,6 +61,16 @@ public class LunisolarCalendarTest {
     .append("{\"range\":{\"largestMinimum\":2021295600000,\"smallestMaximum\":2023887599999,\"fixed\":true,\"intValue\":false,\"minimum\":2021295600000,\"maximum\":2023887599999},\"preClimates\":[{}],\"midClimates\":[{},{}],\"intercalary\":false,\"monthOfYear\":12}")
     .toString().replaceAll("\"range\"\\:\\{.*\\},", "");
 
-    assertThat(new LunisolarCalendar(Lunisolar.Kyoho, Julian.ofEpochMilli(OffsetDateTime.parse("2033-01-01T00:00:00.000+09:00").toInstant().toEpochMilli())).toString().replaceAll("\"range\"\\:\\{.*\\},", ""), is(expect));
+    assertThat(new LunisolarCalendar(Lunisolar.Tenpo, Julian.ofEpochMilli(OffsetDateTime.parse("2033-01-01T00:00:00.000+09:00").toInstant().toEpochMilli())).toString().replaceAll("\"range\"\\:\\{.*\\},", ""), is(expect));
+  }
+
+  @Test
+  public void paintItGreen() {
+    try {
+      new LunisolarCalendar(null, 0d);
+      fail("must raise NPE .");
+    } catch (NullPointerException ex) {
+      assertThat(ex instanceof NullPointerException, is(true));
+    }
   }
 }

@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package jp.furplag.time.lunisolar;
 
 import java.time.ZoneOffset;
@@ -21,8 +22,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-
-import javax.annotation.Nonnull;
 
 import jp.furplag.misc.Astror;
 import jp.furplag.misc.orrery.EclipticLongitude;
@@ -35,10 +34,31 @@ import jp.furplag.misc.orrery.EclipticLongitude;
  */
 public final class StandardLunisolar extends Lunisolar {
 
+  /**
+   *
+   * @param daysOfYear
+   * @param daysOfMonth
+   * @param zoneOffset
+   */
   StandardLunisolar(double daysOfYear, double daysOfMonth, ZoneOffset zoneOffset) {
     super(daysOfYear, daysOfMonth, zoneOffset);
   }
 
+  /**
+   *
+   * @param daysOfYear an average of days of year
+   * @param daysOfMonth an average of days of month
+   * @param zoneOffset {@link ZoneOffset}
+   * @param precision a precision for calculates
+   * @param loopLimit limitation of calculates
+   */
+  StandardLunisolar(double daysOfYear, double daysOfMonth, ZoneOffset zoneOffset, double precision, int loopLimit) {
+    super(daysOfYear, daysOfMonth, zoneOffset, precision, loopLimit);
+  }
+
+  /**
+   * {@inheritDoc}
+   */
   @Override
   double closestTerm(double julianDate, double degree) {
     final double expect = Astror.circulate(degree);
@@ -69,8 +89,14 @@ public final class StandardLunisolar extends Lunisolar {
     return counter < loopLimit ? (numeric + floating) : (doOurOwnBest(results, (numeric + floating)));
   }
 
+  /**
+   * calculate the first day of the month(s) .
+   *
+   * @param solarTerms {@link SolarTerm} of the year
+   * @return the first days represented by epoch millis
+   */
   @Override
-  protected List<Long> termsToFirstDays(@Nonnull List<SolarTerm> solarTerms) {
+  protected List<Long> termsToFirstDays(@lombok.NonNull List<SolarTerm> solarTerms) {
     // @formatter:off
     return solarTerms.stream()
       .mapToDouble(solarTerm -> solarTerm.julianDate)
@@ -81,6 +107,9 @@ public final class StandardLunisolar extends Lunisolar {
     // @formatter:on
   }
 
+  /**
+   * {@inheritDoc}
+   */
   @Override
   List<SolarTerm> termsOfBase(double julianDate) {
     final List<SolarTerm> solarTerms = new ArrayList<>();

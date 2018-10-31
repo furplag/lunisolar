@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package jp.furplag.time.lunisolar;
 
 import java.time.Duration;
@@ -22,36 +23,68 @@ import jp.furplag.time.Julian;
 import jp.furplag.time.JulianDayNumber;
 import jp.furplag.time.Millis;
 
+/**
+ * the day of east asian Lunisolar calendar system .
+ *
+ * @author furplag
+ *
+ */
 public class LunisolarDate {
 
+  /** AJD . */
   final double julianDate;
 
+  /** JDN . */
   final long julianDayNumber;
 
+  /** millis from epoch . */
   final long epochMilli;
 
+  /** the year in AD.(BC.) . */
   final long year;
 
+  /** year of era . */
   final int yearOfEra;
 
+  /** month of year . */
   final int monthOfYear;
 
+  /** day of month . */
   final long dayOfMonth;
 
+  /** leap month . */
   final boolean intercalary;
 
+  /** meant &quot;十干&quot; . */
   final int heavenlyStem;
 
+  /** meant &quot;十二支&quot; . */
   final int earthlyBranch;
 
+  /**
+   * calculate lunisolar calendar .
+   *
+   * @param julianDate astronomical julian date
+   * @return {@link LunisolarDate}
+   */
   public static final LunisolarDate ofJulian(final double julianDate) {
     return new LunisolarDate(julianDate);
   }
 
+  /**
+   * calculate lunisolar calendar .
+   *
+   * @param epochMilli millis from epoch
+   * @return {@link LunisolarDate}
+   */
   public static final LunisolarDate ofEpochMilli(final long epochMilli) {
     return new LunisolarDate(Julian.ofEpochMilli(epochMilli));
   }
 
+  /**
+   *
+   * @param julianDate astronomical julian date
+   */
   private LunisolarDate(double julianDate) {
     this.julianDate = julianDate;
     julianDayNumber = JulianDayNumber.ofJulian(julianDate);
@@ -72,6 +105,9 @@ public class LunisolarDate {
     earthlyBranch = 0;
   }
 
+  /**
+   * {@inheritDoc}
+   */
   @Override
   public String toString() {
     return new StringBuilder()

@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package jp.furplag.time.lunisolar;
 
 import java.time.Instant;
@@ -47,36 +48,74 @@ import jp.furplag.time.Julian;
  */
 public abstract class Lunisolar {
 
-  /** meant &quot;享保暦&quot; . */
-  static final Lunisolar Kyoho;
+  /** meant &quot;天保暦&quot; . */
+  static final Lunisolar Tenpo;
 
   /** a precision for calculates . */
-  static final double precision;
+  static final double precisionDefault;
 
   /** limitation of calculates . */
-  static final int loopLimit;
+  static final int loopLimitDefault;
 
   static {
-    Kyoho = new StandardLunisolar(365.242234, 29.530588, ZoneOffset.ofHours(9));
-    precision = 5E-10;
-    loopLimit = 100;
+    final double precisionDefaultOrigin = 5E-10;
+    final int loopLimitDefaultOrigin = 100;
+    precisionDefault = precisionDefaultOrigin;
+    loopLimitDefault = loopLimitDefaultOrigin;
+    Tenpo = new StandardLunisolar(365.242234, 29.530588, ZoneOffset.ofHours(9), precisionDefaultOrigin, loopLimitDefaultOrigin);
   }
 
+  /** an average of days of year . */
   final double daysOfYear;
 
+  /** an average of days of month . */
   final double daysOfMonth;
 
+  /** {@link ZoneOffset} . */
   final ZoneOffset zoneOffset;
 
+  /** a precision for calculates . */
+  final double precision;
+
+  /** limitation of calculates . */
+  final int loopLimit;
+
+  /**
+   * calculates the lunisolar calendar of specified julian date .
+   *
+   * @param julianDate the astronomical julian date
+   * @return {@link Lunisolar}
+   */
   public static Lunisolar ofJulian(final double julianDate) {
-    return Kyoho;
+    return Tenpo;
+
   }
 
-  Lunisolar(double daysOfYear, double daysOfMonth, ZoneOffset zoneOffset) {
+  /**
+   *
+   * @param daysOfYear an average of days of year
+   * @param daysOfMonth an average of days of month
+   * @param zoneOffset {@link ZoneOffset}
+   * @param precision a precision for calculates
+   * @param loopLimit limitation of calculates
+   */
+  Lunisolar(double daysOfYear, double daysOfMonth, ZoneOffset zoneOffset, double precision, int loopLimit) {
     this.daysOfYear = daysOfYear;
     this.daysOfMonth = daysOfMonth;
     this.zoneOffset = zoneOffset;
+    this.precision = precision;
+    this.loopLimit = loopLimit;
   }
+
+  /**
+  *
+  * @param daysOfYear an average of days of year
+  * @param daysOfMonth an average of days of month
+  * @param zoneOffset {@link ZoneOffset}
+  */
+ Lunisolar(double daysOfYear, double daysOfMonth, ZoneOffset zoneOffset) {
+   this(daysOfYear, daysOfMonth, zoneOffset, precisionDefault, loopLimitDefault);
+ }
 
   /**
    * returns the result that have minimum delta.
@@ -168,7 +207,12 @@ public abstract class Lunisolar {
       results.put(Math.abs(diffOfNumeric + diffOfFloating), (numeric + floating));
     } while (Math.abs(diffOfNumeric + diffOfFloating) > precision && counter < loopLimit);
 
-    return counter < loopLimit ? (numeric + floating) : (doOurOwnBest(results, (numeric + floating)));
+    if (counter < loopLimit) {
+      return (numeric + floating);
+    } else {
+      return doOurOwnBest(results, (numeric + floating));
+    }
+//    return counter < loopLimit ? (numeric + floating) : (doOurOwnBest(results, (numeric + floating)));
   }
 
   /**

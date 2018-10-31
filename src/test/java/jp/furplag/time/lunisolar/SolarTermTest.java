@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package jp.furplag.time.lunisolar;
 
 import static org.hamcrest.CoreMatchers.*;
@@ -45,12 +46,12 @@ public class SolarTermTest {
   @Test
   public void testOfClosest() throws ReflectiveOperationException {
     final Instant instant = Instant.parse("2033-01-01T00:00:00.000Z");
-    final double springEquinox = Lunisolar.Kyoho.springEquinox(Julian.ofEpochMilli(instant.toEpochMilli()));
-    final double automnEquinox = Lunisolar.Kyoho.closestTerm(Julian.ofEpochMilli(instant.plus(200, ChronoUnit.DAYS).toEpochMilli()), 180);
+    final double springEquinox = Lunisolar.Tenpo.springEquinox(Julian.ofEpochMilli(instant.toEpochMilli()));
+    final double automnEquinox = Lunisolar.Tenpo.closestTerm(Julian.ofEpochMilli(instant.plus(200, ChronoUnit.DAYS).toEpochMilli()), 180);
     // @formatter:off
     final Map<OffsetDateTime, SolarTerm> terms = IntStream.range(0, 360)
-      .mapToObj(d->SolarTerm.ofClosest((d < 180 ? springEquinox : automnEquinox), d, Lunisolar.Kyoho))
-      .collect(Collectors.toMap(k -> Lunisolar.Kyoho.atOffset(Millis.toInstant(Lunisolar.Kyoho.asStartOfDay(k.julianDate))), v -> v, (v1, v2) -> v1, LinkedHashMap::new));
+      .mapToObj(d->SolarTerm.ofClosest((d < 180 ? springEquinox : automnEquinox), d, Lunisolar.Tenpo))
+      .collect(Collectors.toMap(k -> Lunisolar.Tenpo.atOffset(Millis.toInstant(Lunisolar.Tenpo.asStartOfDay(k.julianDate))), v -> v, (v1, v2) -> v1, LinkedHashMap::new));
     // @formatter:on
     assertNotNull(terms.get(OffsetDateTime.parse("2033-03-20T00:00+09:00")));
     assertNotNull(terms.get(OffsetDateTime.parse("2033-04-04T00:00+09:00")));

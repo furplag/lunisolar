@@ -25,13 +25,13 @@ import java.time.ZoneOffset;
 import java.time.temporal.ChronoField;
 import java.time.temporal.ValueRange;
 import java.util.HashMap;
+import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.LongStream;
 
 import org.junit.Test;
 
-import jp.furplag.reflect.SavageReflection;
 import jp.furplag.time.Julian;
 
 public class LunisolarTest {
@@ -144,22 +144,7 @@ public class LunisolarTest {
   @Test
   public void paintItGreen() throws ReflectiveOperationException {
     Lunisolar lunisolar = new StandardLunisolar(365.242234, 29.530588, ZoneOffset.ofHours(9));
-    final double precision = (double) SavageReflection.get(lunisolar, "precision");
-    final int loopLimit = (int) SavageReflection.get(lunisolar, "loopLimit");
 
-    SavageReflection.set(lunisolar, "precision", 1E-20);
-    lunisolar.latestNewMoon(Julian.ofEpochMilli(Instant.parse("2034-01-20T00:00:00.000Z").toEpochMilli()));
-    lunisolar.closestTerm(Julian.ofEpochMilli(Instant.parse("2034-01-20T00:00:00.000Z").toEpochMilli()), 270);
-
-    SavageReflection.set(lunisolar, "loopLimit", 10);
-    lunisolar.latestNewMoon(Julian.ofEpochMilli(Instant.parse("2034-01-20T00:00:00.000Z").toEpochMilli()));
-    lunisolar.closestTerm(Julian.ofEpochMilli(Instant.parse("2034-01-20T00:00:00.000Z").toEpochMilli()), 270);
-
-    SavageReflection.set(lunisolar, "precision", precision);
-    lunisolar.latestNewMoon(Julian.ofEpochMilli(Instant.parse("2034-01-20T00:00:00.000Z").toEpochMilli()));
-    lunisolar.closestTerm(Julian.ofEpochMilli(Instant.parse("2034-01-20T00:00:00.000Z").toEpochMilli()), 270);
-
-    SavageReflection.set(lunisolar, "loopLimit", loopLimit);
     lunisolar.latestNewMoon(Julian.ofEpochMilli(Instant.parse("2034-01-20T00:00:00.000Z").toEpochMilli()));
     lunisolar.closestTerm(Julian.ofEpochMilli(Instant.parse("2034-01-20T00:00:00.000Z").toEpochMilli()), 270);
 
@@ -177,5 +162,25 @@ public class LunisolarTest {
         lunisolar.closestTerm(j, 0.01);
       });
     // @formatter:on
+
+    Lunisolar paintItGreen = new Lunisolar(365.242234, 29.530588, ZoneOffset.ofHours(9), 1E-30, -1) {
+      @Override
+      List<Long> termsToFirstDays(List<SolarTerm> solarTerms) {
+        return lunisolar.termsToFirstDays(solarTerms);
+      }
+
+      @Override
+      List<SolarTerm> termsOfBase(double julianDate) {
+        return lunisolar.termsOfBase(julianDate);
+      }
+
+      @Override
+      double closestTerm(double julianDate, double degree) {
+        // TODO 自動生成されたメソッド・スタブ
+        return lunisolar.closestTerm(julianDate, degree);
+      }
+    };
+    paintItGreen.latestNewMoon(Julian.ofEpochMilli(Instant.parse("2034-01-20T00:00:00.000Z").toEpochMilli()));
+    paintItGreen.closestTerm(Julian.ofEpochMilli(Instant.parse("2034-01-20T00:00:00.000Z").toEpochMilli()), 270);
   }
 }

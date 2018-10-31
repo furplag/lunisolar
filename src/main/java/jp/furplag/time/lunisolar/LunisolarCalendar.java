@@ -23,8 +23,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import javax.annotation.Nonnull;
-
 import jp.furplag.time.Millis;
 
 /**
@@ -35,13 +33,21 @@ import jp.furplag.time.Millis;
  */
 public final class LunisolarCalendar {
 
+  /** calendar system . */
   final Lunisolar lunisolar;
 
+  /** the range of the calendar . */
   final ValueRange rangeOfYear;
 
+  /** months of the year . */
   final List<LunarMonth> monthsOfYear;
 
-  public LunisolarCalendar(@Nonnull Lunisolar lunisolar, double julianDate) {
+  /**
+   *
+   * @param lunisolar {@link Lunisolar} calendar system
+   * @param julianDate astronomical julian date
+   */
+  public LunisolarCalendar(@lombok.NonNull Lunisolar lunisolar, double julianDate) {
     this.lunisolar = lunisolar;
     final List<SolarTerm> solarTerms = lunisolar.termsOfBase(julianDate);
     monthsOfYear = LunarMonth.constructs(solarTerms, lunisolar.termsToFirstDays(solarTerms));
@@ -54,13 +60,11 @@ public final class LunisolarCalendar {
   @Override
   public String toString() {
     return new StringBuilder()
-      .append(Millis.toInstant(rangeOfYear.getMinimum()).atOffset(lunisolar.zoneOffset).toString())
-      .append(" - ")
-      .append(Millis.toInstant(rangeOfYear.getMaximum()).atOffset(lunisolar.zoneOffset).toString())
-      .append(" ( ")
-      .append(Duration.of(rangeOfYear.getMaximum() - rangeOfYear.getMinimum(), ChronoUnit.MILLIS).toDays())
-      .append(" days ) ")
-      .append("\n")
+      .append(
+        String.format("%s - %s ( %d days )\n"
+          , Millis.toInstant(rangeOfYear.getMinimum()).atOffset(lunisolar.zoneOffset).toString()
+          , Millis.toInstant(rangeOfYear.getMaximum()).atOffset(lunisolar.zoneOffset).toString()
+          , Duration.of(rangeOfYear.getMaximum() - rangeOfYear.getMinimum(), ChronoUnit.MILLIS).toDays()))
       .append(monthsOfYear.stream().map(Objects::toString).collect(Collectors.joining("\n\t","\t","")))
       .toString();
   }

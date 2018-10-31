@@ -54,12 +54,24 @@ public abstract class SolarTerm implements Comparable<SolarTerm>, Serializable {
     this.termIndex = ((int) ((longitude + 45.0) / 15.0)) % 24;
   }
 
+  /**
+   * meant &quot;中気&quot; .
+   *
+   * @author furplag
+   *
+   */
   static final class MidClimate extends SolarTerm {
     MidClimate(double julianDate) {
       super(julianDate);
     }
   }
 
+  /**
+   * meant &quot;二十四節気&quot; .
+   *
+   * @author furplag
+   *
+   */
   static final class PreClimate extends SolarTerm {
     PreClimate(double julianDate) {
       super(julianDate);
