@@ -1,5 +1,6 @@
 {
   "JAVA": {
-    "TOO_MANY_IVARS": [12, 24, 36, 48]
+    "TOO_MANY_IVARS": [12, 24, 36, 48],
+    "ARITY": [7, 8, 9, 10]
   }
 }
