@@ -5,8 +5,8 @@ branches:
 language: java
 
 jdk:
-  - openjdk8
-  - oraclejdk8
+  - oraclejdk11
+  - openjdk11
 
 before_install:
   - mvn license:format --quiet -B
