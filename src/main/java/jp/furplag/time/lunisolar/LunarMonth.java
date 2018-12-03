@@ -23,7 +23,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -157,15 +156,15 @@ public final class LunarMonth implements Comparable<LunarMonth>, Serializable {
    * @return optimized lunarMonths
    */
   private static List<LunarMonth> monthOfYear(final @lombok.NonNull List<LunarMonth> lunarMonths) {
-    final LunarMonth january = Streamr.firstOf(Streamr.stream(lunarMonths), (e) -> e.monthOfYear == 1);
+    final LunarMonth january = Streamr.Filter.filtering(Streamr.Filter.FilteringMode.And, lunarMonths, (e) -> e.monthOfYear == 1).findFirst().orElse(null);
     // @formatter:off
     ValueRange r = ValueRange.of(
         january.range.getMinimum()
-      , Optional.ofNullable(Streamr.firstOf(Streamr.stream(lunarMonths), ((Predicate<LunarMonth>) (e) -> e.monthOfYear == 12).and((e) -> january.compareTo(e) < 0))).orElse(january).range.getMinimum()
+      , Optional.ofNullable(Streamr.Filter.filtering(Streamr.Filter.FilteringMode.And, lunarMonths, (e) -> e.monthOfYear == 12, (e) -> january.compareTo(e) < 0).findFirst().orElse(null)).orElse(january).range.getMinimum()
     );
     // @formatter:on
 
-    return Streamr.toList(Streamr.stream(lunarMonths).filter((e) -> r.isValidValue(e.range.getMinimum())));
+    return Streamr.collect(Streamr.stream(lunarMonths).filter((e) -> r.isValidValue(e.range.getMinimum())), ArrayList::new);
   }
 
   /**
