@@ -156,11 +156,11 @@ public final class LunarMonth implements Comparable<LunarMonth>, Serializable {
    * @return optimized lunarMonths
    */
   private static List<LunarMonth> monthOfYear(final @lombok.NonNull List<LunarMonth> lunarMonths) {
-    final LunarMonth january = Streamr.Filter.filtering(Streamr.Filter.FilteringMode.And, lunarMonths, (e) -> e.monthOfYear == 1).findFirst().orElse(null);
+    final LunarMonth january = Streamr.Filter.filtering(lunarMonths, (e) -> e.monthOfYear == 1).findFirst().orElse(null);
     // @formatter:off
     ValueRange r = ValueRange.of(
         january.range.getMinimum()
-      , Optional.ofNullable(Streamr.Filter.filtering(Streamr.Filter.FilteringMode.And, lunarMonths, (e) -> e.monthOfYear == 12, (e) -> january.compareTo(e) < 0).findFirst().orElse(null)).orElse(january).range.getMinimum()
+      , Optional.ofNullable(Streamr.Filter.filtering(lunarMonths, (e) -> e.monthOfYear == 12, (e) -> january.compareTo(e) < 0).findFirst().orElse(null)).orElse(january).range.getMinimum()
     );
     // @formatter:on
 
